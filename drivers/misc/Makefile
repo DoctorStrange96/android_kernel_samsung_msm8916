@@ -76,6 +76,7 @@ obj-$(CONFIG_QCOM_LIQUID_DOCK)	+= qcom_liquid_dock.o
 obj-$(CONFIG_SEC_MISC)	+= sec_param.o sec_misc.o
 obj-$(CONFIG_SEC_GPIO_SETTINGS) += gpio_settings.o
 obj-y				+= qcom/
+obj-$(CONFIG_UID_CPUTIME) 	+= uid_cputime.o
 obj-$(CONFIG_DM_VERITY) += dmverity_query.o
 ifeq ($(TIMA_ENABLED),1)
 obj-$(CONFIG_TIMA_LOG)		+= tima_debug_log.o
