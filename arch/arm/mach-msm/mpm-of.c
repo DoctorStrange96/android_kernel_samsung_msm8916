@@ -37,7 +37,6 @@
 #include <linux/clk/msm-clk.h>
 #include <linux/irqchip/msm-gpio-irq.h>
 #include <linux/irqchip/msm-mpm-irq.h>
-#include <linux/mutex.h>
 #include <asm/arch_timer.h>
 
 enum {
@@ -95,14 +94,6 @@ struct msm_mpm_device_data {
 };
 static struct msm_mpm_device_data msm_mpm_dev_data;
 
-struct mpm_of {
-	char *pkey;
-	char *map;
-	char name[MAX_DOMAIN_NAME];
-	struct irq_chip *chip;
-	int (*get_max_irqs)(struct irq_domain *d);
-};
-
 static struct clk *xo_clk;
 static bool xo_enabled;
 static bool msm_mpm_in_suspend;
@@ -134,7 +125,7 @@ enum {
 	MSM_MPM_DEBUG_NON_DETECTABLE_IRQ_IDLE = BIT(3),
 };
 
-static int msm_mpm_debug_mask = 0;
+static int msm_mpm_debug_mask = 1;
 module_param_named(
 	debug_mask, msm_mpm_debug_mask, int, S_IRUGO | S_IWUSR | S_IWGRP
 );
@@ -528,7 +519,7 @@ bool msm_mpm_irqs_detectable(bool from_idle)
 			from_idle);
 }
 
-void msm_mpm_enter_sleep(uint64_t sclk_count, bool from_idle,
+void msm_mpm_enter_sleep(uint32_t sclk_count, bool from_idle,
 		const struct cpumask *cpumask)
 {
 	cycle_t wakeup = (u64)sclk_count * ARCH_TIMER_HZ;
@@ -553,7 +544,6 @@ void msm_mpm_enter_sleep(uint64_t sclk_count, bool from_idle,
 void msm_mpm_exit_sleep(bool from_idle)
 {
 	unsigned long pending;
-	uint32_t *enabled_intr;
 	int i;
 	int k;
 
@@ -562,16 +552,12 @@ void msm_mpm_exit_sleep(bool from_idle)
 		return;
 	}
 
-	enabled_intr = from_idle ? msm_mpm_enabled_irq :
-						msm_mpm_wake_irq;
-
 	for (i = 0; i < MSM_MPM_REG_WIDTH; i++) {
 		pending = msm_mpm_read(MSM_MPM_REG_STATUS, i);
-		pending &= enabled_intr[i];
 
 		if (MSM_MPM_DEBUG_PENDING_IRQ & msm_mpm_debug_mask)
-			pr_info("%s: enabled_intr.%d pending.%d: 0x%08x 0x%08lx\n",
-				__func__, i, i, enabled_intr[i], pending);
+			pr_info("%s: pending.%d: 0x%08lx", __func__,
+					i, pending);
 
 		k = find_first_bit(&pending, 32);
 		while (k < 32) {
@@ -595,9 +581,6 @@ void msm_mpm_exit_sleep(bool from_idle)
 }
 static void msm_mpm_sys_low_power_modes(bool allow)
 {
-	static DEFINE_MUTEX(enable_xo_mutex);
-
-	mutex_lock(&enable_xo_mutex);
 	if (allow) {
 		if (xo_enabled) {
 			clk_disable_unprepare(xo_clk);
@@ -613,7 +596,6 @@ static void msm_mpm_sys_low_power_modes(bool allow)
 			xo_enabled = true;
 		}
 	}
-	mutex_unlock(&enable_xo_mutex);
 }
 
 void msm_mpm_suspend_prepare(void)
@@ -672,22 +654,13 @@ static int msm_mpm_dev_probe(struct platform_device *pdev)
 	struct resource *res = NULL;
 	int offset, ret;
 	struct msm_mpm_device_data *dev = &msm_mpm_dev_data;
-	const char *clk_name;
-	char *key;
 
 	if (msm_mpm_initialized & MSM_MPM_DEVICE_PROBED) {
 		pr_warn("MPM device probed multiple times\n");
 		return 0;
 	}
 
-	key = "clock-names";
-	ret = of_property_read_string(pdev->dev.of_node, key, &clk_name);
-	if (ret) {
-		pr_err("%s(): Cannot read clock name%s\n", __func__, key);
-		return -EINVAL;
-	}
-
-	xo_clk = devm_clk_get(&pdev->dev, clk_name);
+	xo_clk = devm_clk_get(&pdev->dev, "xo");
 
 	if (IS_ERR(xo_clk)) {
 		pr_err("%s(): Cannot get clk resource for XO\n", __func__);
@@ -723,7 +696,7 @@ static int msm_mpm_dev_probe(struct platform_device *pdev)
 	if (of_property_read_u32(pdev->dev.of_node,
 				"qcom,ipc-bit-offset", &offset)) {
 		pr_info("%s(): Cannot read ipc bit offset\n", __func__);
-		return -EINVAL;
+		return -EINVAL ;
 	}
 
 	dev->mpm_apps_ipc_val = (1 << offset);
@@ -735,8 +708,7 @@ static int msm_mpm_dev_probe(struct platform_device *pdev)
 		return -ENXIO;
 	}
 	ret = devm_request_irq(&pdev->dev, dev->mpm_ipc_irq, msm_mpm_irq,
-			IRQF_TRIGGER_RISING | IRQF_NO_SUSPEND, pdev->name,
-			msm_mpm_irq);
+			IRQF_TRIGGER_RISING, pdev->name, msm_mpm_irq);
 
 	if (ret) {
 		pr_info("%s(): request_irq failed errno: %d\n", __func__, ret);
@@ -783,34 +755,39 @@ static inline int __init mpm_irq_domain_legacy_size(struct irq_domain *d)
 	return d->revmap_data.legacy.size;
 }
 
-static const struct mpm_of mpm_of_map[MSM_MPM_NR_IRQ_DOMAINS] = {
-	{
-		"qcom,gic-parent",
-		"qcom,gic-map",
-		"gic",
-		&gic_arch_extn,
-		mpm_irq_domain_linear_size,
-	},
-	{
-		"qcom,gpio-parent",
-		"qcom,gpio-map",
-		"gpio",
-#if (defined(CONFIG_USE_PINCTRL_IRQ) && defined(CONFIG_PINCTRL_MSM_TLMM))
-		&mpm_tlmm_irq_extn,
-#elif defined(CONFIG_GPIO_MSM_V3)
-		&msm_gpio_irq_extn,
-#else
-		NULL,
-#endif
-		mpm_irq_domain_legacy_size,
-	},
-};
-
 static void __init __of_mpm_init(struct device_node *node)
 {
 	const __be32 *list;
 
+	struct mpm_of {
+		char *pkey;
+		char *map;
+		char name[MAX_DOMAIN_NAME];
+		struct irq_chip *chip;
+		int (*get_max_irqs)(struct irq_domain *d);
+	};
 	int i;
+
+	struct mpm_of mpm_of_map[MSM_MPM_NR_IRQ_DOMAINS] = {
+		{
+			"qcom,gic-parent",
+			"qcom,gic-map",
+			"gic",
+			&gic_arch_extn,
+			mpm_irq_domain_linear_size,
+		},
+		{
+			"qcom,gpio-parent",
+			"qcom,gpio-map",
+			"gpio",
+	#ifdef CONFIG_USE_PINCTRL_IRQ
+			&mpm_tlmm_irq_extn,
+	#else
+			&msm_gpio_irq_extn,
+	#endif
+			mpm_irq_domain_legacy_size,
+		},
+	};
 
 	if (msm_mpm_initialized & MSM_MPM_IRQ_MAPPING_DONE) {
 		pr_warn("%s(): MPM driver mapping exists\n", __func__);
@@ -916,13 +893,11 @@ static void __init __of_mpm_init(struct device_node *node)
 
 failed_malloc:
 	for (i = 0; i < MSM_MPM_NR_IRQ_DOMAINS; i++) {
-		if (mpm_of_map[i].chip) {
-			mpm_of_map[i].chip->irq_mask = NULL;
-			mpm_of_map[i].chip->irq_unmask = NULL;
-			mpm_of_map[i].chip->irq_disable = NULL;
-			mpm_of_map[i].chip->irq_set_type = NULL;
-			mpm_of_map[i].chip->irq_set_wake = NULL;
-		}
+		mpm_of_map[i].chip->irq_mask = NULL;
+		mpm_of_map[i].chip->irq_unmask = NULL;
+		mpm_of_map[i].chip->irq_disable = NULL;
+		mpm_of_map[i].chip->irq_set_type = NULL;
+		mpm_of_map[i].chip->irq_set_wake = NULL;
 
 		kfree(unlisted_irqs[i].enabled_irqs);
 		kfree(unlisted_irqs[i].wakeup_irqs);
@@ -959,3 +934,4 @@ void __init of_mpm_init(void)
 	if (node)
 		__of_mpm_init(node);
 }
+
