@@ -6042,8 +6042,7 @@ fix_small_capacity(struct sched_domain *sd, struct sched_group *group)
  */
 static inline void update_sg_lb_stats(struct lb_env *env,
 			struct sched_group *group, int load_idx,
-			int local_group, int *balance, struct sg_lb_stats *sgs,
-			bool *overload)
+			int local_group, int *balance, struct sg_lb_stats *sgs, bool *overload)
 {
 	unsigned long nr_running, max_nr_running, min_nr_running;
 	unsigned long load, max_cpu_load, min_cpu_load;
@@ -6101,6 +6100,10 @@ static inline void update_sg_lb_stats(struct lb_env *env,
 		if (nr_running > 1) *overload = true;
 
 		sgs->sum_weighted_load += weighted_cpuload(i);
+
+		if (rq->nr_running > 1)
+		 *overload = true;
+
 		if (idle_cpu(i))
 			sgs->idle_cpus++;
 	}
@@ -6240,7 +6243,7 @@ static inline void update_sd_lb_stats(struct lb_env *env,
 		local_group = cpumask_test_cpu(env->dst_cpu, sched_group_cpus(sg));
 		memset(&sgs, 0, sizeof(sgs));
 		update_sg_lb_stats(env, sg, load_idx, local_group, balance, &sgs,
-						&overload);
+ &overload);
 
 		if (local_group && !(*balance))
 			return;
@@ -6289,11 +6292,11 @@ static inline void update_sd_lb_stats(struct lb_env *env,
 		sg = sg->next;
 	} while (sg != env->sd->groups);
 
-	if (!env->sd->parent) {
-		/* update overload indicator if we are at root domain */
-		if (env->dst_rq->rd->overload != overload)
-			env->dst_rq->rd->overload = overload;
-	}
+if (!env->sd->parent) {
+ /* update overload indicator if we are at root domain */
+ if (env->dst_rq->rd->overload != overload)
+ env->dst_rq->rd->overload = overload;
+ }
 
 }
 
@@ -6981,7 +6984,7 @@ void idle_balance(int this_cpu, struct rq *this_rq)
 	this_rq->idle_stamp = this_rq->clock;
 
 	if (this_rq->avg_idle < sysctl_sched_migration_cost ||
-	    !this_rq->rd->overload)
+ !this_rq->rd->overload)
 		return;
 
 	/* If this CPU is not the most power-efficient idle CPU in the

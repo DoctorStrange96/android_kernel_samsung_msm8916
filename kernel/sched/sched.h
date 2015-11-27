@@ -1397,20 +1397,22 @@ static inline void inc_nr_running(struct rq *rq)
 #endif
 	rq->nr_running++;
 
-	if (rq->nr_running == 2) {
+if (rq->nr_running >= 2) {
 #ifdef CONFIG_SMP
-		if (!rq->rd->overload)
-			rq->rd->overload = true;
+ if (!rq->rd->overload)
+ rq->rd->overload = true;
 #endif
 
 #ifdef CONFIG_NO_HZ_FULL
-		if (tick_nohz_full_cpu(rq->cpu)) {
+
+	if (tick_nohz_full_cpu(rq->cpu)) {
 			/* Order rq->nr_running write against the IPI */
 			smp_wmb();
 			smp_send_reschedule(rq->cpu);
-		}
+	}
 #endif
 	}
+
 #ifdef CONFIG_INTELLI_PLUG
 	write_seqcount_end(&nr_stats->ave_seqcnt);
 #endif
