@@ -4662,6 +4662,7 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
 		unit_load = 100;
 
 	status = 0;
+
 	for (i = 0; i < SET_CONFIG_TRIES; i++) {
 
 		/* reallocate for each attempt, since references
