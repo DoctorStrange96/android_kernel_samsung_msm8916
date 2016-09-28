@@ -52,6 +52,10 @@
 
 #include <linux/msm-bus.h>
 
+#ifdef CONFIG_FORCE_FAST_CHARGE
+#include <linux/fastchg.h>
+#endif
+
 #define MSM_USB_BASE	(motg->regs)
 #define MSM_USB_PHY_CSR_BASE (motg->phy_csr_regs)
 
@@ -1985,6 +1989,15 @@ static void msm_otg_notify_charger(struct msm_otg *motg, unsigned mA)
 
 	if (motg->cur_power == mA)
 		return;
+	
+#ifdef CONFIG_FORCE_FAST_CHARGE
+	if (force_fast_charge > 0 && mA > 0) {
+		mA = IDEV_ACA_CHG_MAX;
+		pr_info("USB fast charging is ON\n");
+	} else {
+		pr_info("USB fast charging is OFF\n");
+	}
+#endif
 
 	dev_info(motg->phy.dev, "Avail curr from USB = %u\n", mA);
 	msm_otg_dbg_log_event(&motg->phy, "AVAIL CURR FROM USB",
@@ -3324,8 +3337,18 @@ static void msm_otg_sm_work(struct work_struct *w)
 				case USB_DCP_CHARGER:
 					/* fall through */
 				case USB_PROPRIETARY_CHARGER:
+#ifdef CONFIG_FORCE_FAST_CHARGE
+					if (force_fast_charge > 0) {
+						msm_otg_notify_charger(motg,
+						IDEV_CHG_MAX_FAST);						
+					} else {
+						msm_otg_notify_charger(motg,
+								IDEV_CHG_MAX);
+					}
+#else
 					msm_otg_notify_charger(motg,
 							IDEV_CHG_MAX);
+#endif
 					otg->phy->state =
 						OTG_STATE_B_CHARGER;
 					work = 0;
@@ -3336,8 +3359,18 @@ static void msm_otg_sm_work(struct work_struct *w)
 					pm_runtime_put_sync(otg->phy->dev);
 					break;
 				case USB_FLOATED_CHARGER:
+#ifdef CONFIG_FORCE_FAST_CHARGE
+					if (force_fast_charge > 0) {
+						msm_otg_notify_charger(motg,
+								IDEV_CHG_MAX_FAST);						
+					} else {
+						msm_otg_notify_charger(motg,
+								IDEV_CHG_MAX);
+					}
+#else
 					msm_otg_notify_charger(motg,
 							IDEV_CHG_MAX);
+#endif
 					otg->phy->state =
 						OTG_STATE_B_CHARGER;
 					work = 0;
@@ -3357,8 +3390,18 @@ static void msm_otg_sm_work(struct work_struct *w)
 					 */
 					break;
 				case USB_CDP_CHARGER:
+#ifdef CONFIG_FORCE_FAST_CHARGE
+					if (force_fast_charge > 0) {
+						msm_otg_notify_charger(motg,
+								IDEV_CHG_MAX_FAST);						
+					} else {
+						msm_otg_notify_charger(motg,
+								IDEV_CHG_MAX);
+					}
+#else
 					msm_otg_notify_charger(motg,
 							IDEV_CHG_MAX);
+#endif
 					msm_otg_start_peripheral(otg, 1);
 					otg->phy->state =
 						OTG_STATE_B_PERIPHERAL;
