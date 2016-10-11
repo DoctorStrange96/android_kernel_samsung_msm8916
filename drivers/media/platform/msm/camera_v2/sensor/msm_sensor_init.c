@@ -541,12 +541,11 @@ static int __init msm_sensor_init_module(void)
 	/* Allocate memory for msm_sensor_init control structure */
 	s_init = kzalloc(sizeof(struct msm_sensor_init_t), GFP_KERNEL);
 	if (!s_init) {
-		class_destroy(camera_class);
 		pr_err("failed: no memory s_init %pK", NULL);
 		return -ENOMEM;
 	}
 
-	pr_err("MSM_SENSOR_INIT_MODULE %pK", NULL);
+	CDBG("MSM_SENSOR_INIT_MODULE %pK", NULL);
 
 	/* Initialize mutex */
 	mutex_init(&s_init->imutex);

@@ -50,6 +50,36 @@ static int msm_isp_stats_cfg_ping_pong_address(struct vfe_device *vfe_dev,
 		rc = -EINVAL;
 		goto buf_error;
 	}
+	if (vfe_dev->is_split && buf_cnt == MAX_VFE) {
+		dual_vfe_res = vfe_dev->dual_vfe_res;
+		if (!dual_vfe_res->vfe_base[ISP_VFE0] ||
+			!dual_vfe_res->stats_data[ISP_VFE0] ||
+			!dual_vfe_res->vfe_base[ISP_VFE1] ||
+			!dual_vfe_res->stats_data[ISP_VFE1]) {
+			pr_err("%s:%d error vfe0 %pK %pK vfe1 %pK %pK\n", __func__,
+				__LINE__, dual_vfe_res->vfe_base[ISP_VFE0],
+				dual_vfe_res->stats_data[ISP_VFE0],
+				dual_vfe_res->vfe_base[ISP_VFE1],
+				dual_vfe_res->stats_data[ISP_VFE1]);
+		} else {
+			for (vfe_id = 0; vfe_id < MAX_VFE; vfe_id++) {
+				dual_vfe_stream_info = &dual_vfe_res->
+					stats_data[vfe_id]->
+					stream_info[stats_idx];
+				vfe_dev->hw_info->vfe_ops.stats_ops.
+					update_ping_pong_addr(
+					dual_vfe_res->vfe_base[vfe_id],
+					dual_vfe_stream_info, pingpong_status,
+					buf->mapped_info[0].paddr +
+					dual_vfe_stream_info->buffer_offset);
+			}
+		}
+	} else if (!vfe_dev->is_split) {
+		vfe_dev->hw_info->vfe_ops.stats_ops.update_ping_pong_addr(
+			vfe_dev->vfe_base, stream_info,
+			pingpong_status, buf->mapped_info[0].paddr +
+				stream_info->buffer_offset);
+	}
 
 	vfe_dev->hw_info->vfe_ops.stats_ops.update_ping_pong_addr(
 		vfe_dev, stream_info,
@@ -67,9 +97,92 @@ buf_error:
 	return rc;
 }
 
-void msm_isp_process_stats_irq(struct vfe_device *vfe_dev,
-	uint32_t irq_status0, uint32_t irq_status1,
-	struct msm_isp_timestamp *ts)
+static int32_t msm_isp_stats_buf_divert(struct vfe_device *vfe_dev,
+	struct msm_isp_buffer *done_buf, struct msm_isp_timestamp *ts,
+	struct msm_isp_event_data *buf_event,
+	struct msm_vfe_stats_stream *stream_info,
+	uint32_t *comp_stats_type_mask)
+{
+	int32_t rc = 0, frame_id = 0, drop_buffer = 0;
+	struct msm_isp_stats_event *stats_event = NULL;
+	struct msm_isp_sw_framskip *sw_skip = NULL;
+
+	if (!vfe_dev || !done_buf || !ts || !buf_event || !stream_info ||
+		!comp_stats_type_mask) {
+		pr_err("%s:%d failed: invalid params %pK %pK %pK %pK %pK %pK\n",
+			__func__, __LINE__, vfe_dev, done_buf, ts, buf_event,
+			stream_info, comp_stats_type_mask);
+		return -EINVAL;
+	}
+	frame_id = vfe_dev->axi_data.src_info[VFE_PIX_0].frame_id;
+	sw_skip = &stream_info->sw_skip;
+	stats_event = &buf_event->u.stats;
+
+	if (sw_skip->stats_type_mask &
+		(1 << stream_info->stats_type)) {
+		/* Hw stream output of this src is requested
+		   for drop */
+		if (sw_skip->skip_mode == SKIP_ALL) {
+			/* drop all buffers */
+			drop_buffer = 1;
+		} else if (sw_skip->skip_mode == SKIP_RANGE &&
+		(sw_skip->min_frame_id <= frame_id &&
+		sw_skip->max_frame_id >= frame_id)) {
+			drop_buffer = 1;
+		} else if (frame_id > sw_skip->max_frame_id) {
+			memset(sw_skip, 0, sizeof
+				(struct msm_isp_sw_framskip));
+		}
+	}
+
+	rc = vfe_dev->buf_mgr->ops->buf_divert(
+		vfe_dev->buf_mgr, done_buf->bufq_handle,
+		done_buf->buf_idx, &ts->buf_time,
+		frame_id);
+	if (rc != 0) {
+		ISP_DBG("%s: vfe_id %d buf_id %d bufq %x put_cnt 1\n", __func__,
+			vfe_dev->pdev->id, done_buf->buf_idx,
+			done_buf->bufq_handle);
+		*comp_stats_type_mask |=
+			1 << stream_info->stats_type;
+		stats_event->stats_buf_idxs
+			[stream_info->stats_type] =
+			done_buf->buf_idx;
+		done_buf->frame_id = frame_id;
+		return rc;
+	}
+
+	if (drop_buffer) {
+		vfe_dev->buf_mgr->ops->put_buf(
+			vfe_dev->buf_mgr,
+			done_buf->bufq_handle,
+			done_buf->buf_idx);
+		return rc;
+	}
+	stats_event->stats_buf_idxs
+		[stream_info->stats_type] =
+		done_buf->buf_idx;
+	if (!stream_info->composite_flag) {
+		stats_event->stats_mask =
+			1 << stream_info->stats_type;
+		ISP_DBG("%s: stats frameid: 0x%x %d bufq %x\n",
+			__func__, buf_event->frame_id,
+			stream_info->stats_type, done_buf->bufq_handle);
+		msm_isp_send_event(vfe_dev,
+			ISP_EVENT_STATS_NOTIFY +
+			stream_info->stats_type,
+			buf_event);
+	} else {
+		*comp_stats_type_mask |=
+			1 << stream_info->stats_type;
+	}
+
+	return rc;
+}
+
+static int32_t msm_isp_stats_configure(struct vfe_device *vfe_dev,
+	uint32_t stats_irq_mask, struct msm_isp_timestamp *ts,
+	bool is_composite)
 {
 	int i, j, rc;
 	struct msm_isp_event_data buf_event;

@@ -57,7 +57,7 @@ static void vpe_mem_dump(const char * const name, const void * const addr,
 	p_str = line_str;
 	for (i = 0; i < size/4; i++) {
 		if (i % 4 == 0) {
-			snprintf(p_str, 12, "%08x: ", (u32) p);
+			snprintf(p_str, 12, "%pK: ", p);
 			p_str += 10;
 		}
 		data = *p++;

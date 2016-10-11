@@ -546,11 +546,22 @@ static int eeprom_config_read_compressed_data(struct msm_eeprom_ctrl_t *e_ctrl,
     goto FREE;
 	}
 
-#if 0 //  just once to power up when load lib
-	rc = msm_eeprom_power_up(e_ctrl, &down);
-	if (rc < 0) {
-    pr_err("%s: failed to power on eeprom\n", __func__);
-    goto FREE;
+static long msm_eeprom_subdev_ioctl(struct v4l2_subdev *sd,
+		unsigned int cmd, void *arg)
+{
+	struct msm_eeprom_ctrl_t *e_ctrl = v4l2_get_subdevdata(sd);
+	void __user *argp = (void __user *)arg;
+	CDBG("%s E\n", __func__);
+	CDBG("%s:%d a_ctrl %pK argp %pK\n", __func__, __LINE__, e_ctrl, argp);
+	switch (cmd) {
+	case VIDIOC_MSM_SENSOR_GET_SUBDEV_ID:
+		return msm_eeprom_get_subdev_id(e_ctrl, argp);
+	case VIDIOC_MSM_EEPROM_CFG:
+		return msm_eeprom_config(e_ctrl, argp);
+	default:
+		pr_err_ratelimited("%s: unsupported compat type 0x%x\n",
+				__func__, cmd);
+		return -ENOIOCTLCMD;
 	}
 #endif
 
@@ -1419,14 +1430,17 @@ static int msm_eeprom_i2c_probe(struct i2c_client *client,
 	if (e_ctrl->pvdd_is_en) {
 		e_ctrl->pvdd_en = of_get_named_gpio(of_node, "qcom,pvdd_en", 0);
 
-		rc = gpio_request(e_ctrl->pvdd_en, "cam_eeprom");
-		if (rc) {
-			pr_err("failed to request about pvdd_en pin. rc = %d\n", rc);
-			gpio_free(e_ctrl->pvdd_en);
-			return -ENODEV;
-		}
-		gpio_direction_output(e_ctrl->pvdd_en, 1);
-		pr_err("%s : pvdd-gpio value = %d\n", __func__, gpio_get_value(e_ctrl->pvdd_en));
+	CDBG("%s E\n", __func__);
+	CDBG("%s:%d a_ctrl %pK argp %pK\n", __func__, __LINE__, e_ctrl, argp);
+	switch (cmd) {
+	case VIDIOC_MSM_SENSOR_GET_SUBDEV_ID:
+		return msm_eeprom_get_subdev_id(e_ctrl, argp);
+	case VIDIOC_MSM_EEPROM_CFG32:
+		return msm_eeprom_config32(e_ctrl, argp);
+	default:
+		pr_err_ratelimited("%s: unsupported compat type 0x%x\n",
+				__func__, cmd);
+		return -ENOIOCTLCMD;
 	}
 
 	if (e_ctrl->cal_data.map) {
