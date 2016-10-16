@@ -103,7 +103,7 @@ static ssize_t store_min_cpus(struct cpu_data *state,
 {
 	unsigned int val;
 
-	if (sscanf(buf, "%u\n", &val) != 1)
+	if (kstrtouint(buf, 0, &val))
 		return -EINVAL;
 
 	state->min_cpus = min(val, state->max_cpus);
@@ -122,7 +122,7 @@ static ssize_t store_max_cpus(struct cpu_data *state,
 {
 	unsigned int val;
 
-	if (sscanf(buf, "%u\n", &val) != 1)
+	if (kstrtouint(buf, 0, &val))
 		return -EINVAL;
 
 	val = min(val, state->num_cpus);
@@ -143,7 +143,7 @@ static ssize_t store_offline_delay_ms(struct cpu_data *state,
 {
 	unsigned int val;
 
-	if (sscanf(buf, "%u\n", &val) != 1)
+	if (kstrtouint(buf, 0, &val))
 		return -EINVAL;
 
 	state->offline_delay_ms = val;
@@ -176,7 +176,7 @@ static ssize_t store_task_thres(struct cpu_data *state,
 {
 	unsigned int val;
 
-	if (sscanf(buf, "%u\n", &val) != 1)
+	if (kstrtouint(buf, 0, &val))
 		return -EINVAL;
 
 	if (val < state->num_cpus)
@@ -204,7 +204,7 @@ static ssize_t store_busy_up_thres(struct cpu_data *state,
 	unsigned int val[MAX_CPUS_PER_GROUP];
 	int ret, i;
 
-	ret = sscanf(buf, "%u %u %u %u\n", &val[0], &val[1], &val[2], &val[3]);
+	ret = sscanf(buf, "%u %u %u %u", &val[0], &val[1], &val[2], &val[3]);
 	if (ret != 1 && ret != state->num_cpus)
 		return -EINVAL;
 
@@ -235,7 +235,7 @@ static ssize_t store_busy_down_thres(struct cpu_data *state,
 	unsigned int val[MAX_CPUS_PER_GROUP];
 	int ret, i;
 
-	ret = sscanf(buf, "%u %u %u %u\n", &val[0], &val[1], &val[2], &val[3]);
+	ret = sscanf(buf, "%u %u %u %u", &val[0], &val[1], &val[2], &val[3]);
 	if (ret != 1 && ret != state->num_cpus)
 		return -EINVAL;
 
@@ -265,7 +265,7 @@ static ssize_t store_is_big_cluster(struct cpu_data *state,
 {
 	unsigned int val;
 
-	if (sscanf(buf, "%u\n", &val) != 1)
+	if (kstrtouint(buf, 0, &val))
 		return -EINVAL;
 
 	state->is_big_cluster = val ? 1 : 0;
@@ -351,7 +351,7 @@ static ssize_t store_not_preferred(struct cpu_data *state,
 	unsigned int val[MAX_CPUS_PER_GROUP];
 	int ret;
 
-	ret = sscanf(buf, "%u %u %u %u\n", &val[0], &val[1], &val[2], &val[3]);
+	ret = sscanf(buf, "%u %u %u %u", &val[0], &val[1], &val[2], &val[3]);
 	if (ret != 1 && ret != state->num_cpus)
 		return -EINVAL;
 
@@ -389,7 +389,7 @@ static ssize_t store_disable(struct cpu_data *state,
 {
 	unsigned int val;
 
-	if (sscanf(buf, "%u\n", &val) != 1)
+	if (kstrtouint(buf, 0, &val))
 		return -EINVAL;
 
 	val = !!val;
