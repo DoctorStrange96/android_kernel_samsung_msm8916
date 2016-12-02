@@ -99,6 +99,7 @@ extern u64 zswap_pool_total_size;
 extern atomic_t zswap_stored_pages;
 #endif
 
+#if defined(CONFIG_SEC_OOM_KILLER) && defined(CONFIG_SEC_DEBUG_LMK_MEMINFO)
 static void dump_tasks_info(void)
 {
 	struct task_struct *p;
@@ -130,6 +131,7 @@ static void dump_tasks_info(void)
 		task_unlock(task);
 	}
 }
+#endif
 
 static int test_task_flag(struct task_struct *p, int flag)
 {
