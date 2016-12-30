@@ -51,6 +51,11 @@ obj-y				+= ti-st/
 obj-y				+= lis3lv02d/
 obj-y				+= carma/
 obj-$(CONFIG_USB_SWITCH_FSA9480) += fsa9480.o
+
+obj-$(CONFIG_SM5502_MUIC) += sm5502.o
+obj-$(CONFIG_SM5504_MUIC) += sm5504.o
+obj-$(CONFIG_SM5703_MUIC) += sm5703-muic.o
+
 obj-$(CONFIG_ALTERA_STAPL)	+=altera-stapl/
 obj-$(CONFIG_INTEL_MEI)		+= mei/
 obj-$(CONFIG_VMWARE_VMCI)	+= vmw_vmci/
@@ -63,7 +68,16 @@ ifdef CONFIG_COMPAT
 obj-$(CONFIG_QSEECOM) += compat_qseecom.o
 endif
 obj-$(CONFIG_QFP_FUSE) += qfp_fuse.o
+obj-$(CONFIG_QSEECOM)  += tzic.o
 obj-$(CONFIG_TI_DRV2667) += ti_drv2667.o
 obj-$(CONFIG_QPNP_MISC) += qpnp-misc.o
+obj-$(CONFIG_SAMSUNG_JACK)	+= sec_jack.o
 obj-$(CONFIG_QCOM_LIQUID_DOCK)	+= qcom_liquid_dock.o
+obj-$(CONFIG_SEC_MISC)	+= sec_param.o sec_misc.o
+obj-$(CONFIG_SEC_GPIO_SETTINGS) += gpio_settings.o
 obj-y				+= qcom/
+obj-$(CONFIG_DM_VERITY) += dmverity_query.o
+ifeq ($(TIMA_ENABLED),1)
+obj-$(CONFIG_TIMA_LOG)		+= tima_debug_log.o
+endif
+obj-$(CONFIG_CHECK_SIMSLOT_COUNT) += sim_slot.o

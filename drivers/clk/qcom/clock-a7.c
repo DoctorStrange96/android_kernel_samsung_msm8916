@@ -168,23 +168,17 @@ static void get_speed_bin_b(struct platform_device *pdev, int *bin,
 {
 	struct resource *res;
 	void __iomem *base;
-	u32 pte_efuse, shift = 2, mask = 0x7;
+	u32 pte_efuse;
 
 	*bin = 0;
 	*version = 0;
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "efuse");
 	if (!res) {
-		res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
-								"efuse1");
-		if (!res) {
 			dev_info(&pdev->dev,
 				"No speed/PVS binning available. Defaulting to 0!\n");
 			return;
 		}
-		shift = 23;
-		mask  = 0x3;
-	}
 
 	base = devm_ioremap(&pdev->dev, res->start, resource_size(res));
 	if (!base) {
@@ -196,7 +190,7 @@ static void get_speed_bin_b(struct platform_device *pdev, int *bin,
 	pte_efuse = readl_relaxed(base);
 	devm_iounmap(&pdev->dev, base);
 
-	*bin = (pte_efuse >> shift) & mask;
+	*bin = (pte_efuse >> 2) & 0x7;
 
 	dev_info(&pdev->dev, "Speed bin: %d PVS Version: %d\n", *bin,
 								*version);

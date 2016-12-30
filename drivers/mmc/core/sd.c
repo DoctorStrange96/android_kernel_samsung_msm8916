@@ -113,6 +113,7 @@ static int mmc_decode_csd(struct mmc_card *card)
 
 	csd_struct = UNSTUFF_BITS(resp, 126, 2);
 
+	pr_err("[mmc]:(%s) csd_struct = %d \n", __func__, csd_struct);
 	switch (csd_struct) {
 	case 0:
 		m = UNSTUFF_BITS(resp, 115, 4);
@@ -846,6 +847,7 @@ try_again:
 		ocr |= SD_OCR_XPC;
 
 	err = mmc_send_app_op_cond(host, ocr, rocr);
+	pr_err("[mmc]:(%s) ocr = %x rocr = %x\n", __func__, ocr, *rocr);
 	if (err)
 		return err;
 
@@ -1155,6 +1157,18 @@ static void mmc_sd_detect(struct mmc_host *host)
 
 	BUG_ON(!host);
 	BUG_ON(!host->card);
+
+#if defined(CONFIG_SEC_HYBRID_TRAY)
+	if (host->ops->get_cd && host->ops->get_cd(host) == 0) { 
+		mmc_card_set_removed(host->card); 
+		mmc_claim_host(host); 
+		mmc_power_off(host); 
+		mmc_sd_remove(host); 
+		mmc_detach_bus(host); 
+		mmc_release_host(host); 
+		return; 
+	}
+#endif
 
 	mmc_rpm_hold(host, &host->card->dev);
 	mmc_claim_host(host);

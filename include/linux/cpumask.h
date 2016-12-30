@@ -278,6 +278,7 @@ static inline void cpumask_clear_cpu(int cpu, struct cpumask *dstp)
  */
 #define cpumask_test_cpu(cpu, cpumask) \
 	test_bit(cpumask_check(cpu), cpumask_bits((cpumask)))
+extern int is_boot_complete(void);
 
 /**
  * cpumask_test_and_set_cpu - atomically test and set a cpu in a cpumask

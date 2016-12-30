@@ -689,6 +689,22 @@ config ARM_KPROBES_TEST
 	help
 	  Perform tests of kprobes API and instruction set simulation.
 
+comment "PowerManagement Feature"
+menuconfig SEC_PM
+	bool "Samsung TN PowerManagement Feature"
+	default y
+	help
+	  Samsung TN PowerManagement Feature.
+
+if SEC_PM
+config SEC_PM_DEBUG
+	bool "Samsung TN PowerManagement Debug Feature"
+	default n
+	help
+	  Samsung TN PowerManagement Debug Feature.
+
+endif
+
 config PID_IN_CONTEXTIDR
 	bool "Write the current PID to the CONTEXTIDR register"
 	depends on CPU_COPY_V6
@@ -708,5 +724,17 @@ config DEBUG_SET_MODULE_RONX
 	  patching and dynamic kernel tracing - and they might also protect
 	  against certain classes of kernel exploits.
 	  If in doubt, say "N".
+
+config RESTART_REASON_SEC_PARAM
+	bool "Save restart reason in SEC param partition"
+	default n
+	help
+	  Param partition can retain the values across reboot, hence this comes in handy backup, when restart reason saved in IMEM is lost.
+
+config CX_VOTE_TURBO
+        bool "Set the Cx as Turbo mode during warmboot exit "
+        default n
+        help
+	   Say Y here if you want to set the Cx as Turbo mode
 
 endmenu

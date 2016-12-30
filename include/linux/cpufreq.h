@@ -157,6 +157,47 @@ static inline unsigned int cpufreq_quick_get_max(unsigned int cpu)
 static inline void disable_cpufreq(void) { }
 #endif
 
+#if defined (CONFIG_CPU_FREQ_LIMIT_USERSPACE)
+enum {
+	BOOT_CPU = 0,
+};
+
+#define MIN_TOUCH_LOW_LIMIT	1497600
+#define MIN_TOUCH_HIGH_LIMIT	2457600
+#define MIN_CAMERA_LIMIT	998400
+
+#if defined(CONFIG_ARCH_MSM8939) || defined(CONFIG_ARCH_MSM8929)
+#define MIN_TOUCH_LIMIT         556600
+#define MIN_TOUCH_LIMIT_SECOND  499200
+#elif defined(CONFIG_ARCH_MSM8916)
+#define MIN_TOUCH_LIMIT         1190400
+#define MIN_TOUCH_LIMIT_SECOND  998400
+#else
+#define MIN_TOUCH_LIMIT		1728000
+#define MIN_TOUCH_LIMIT_SECOND	1190400
+#endif
+
+enum {
+	DVFS_NO_ID			= 0,
+
+	/* need to update now */
+	DVFS_TOUCH_ID			= 0x00000001,
+	DVFS_APPS_MIN_ID		= 0x00000002,
+	DVFS_APPS_MAX_ID		= 0x00000004,
+	DVFS_UNICPU_ID			= 0x00000008,
+	DVFS_LTETP_ID			= 0x00000010,
+	DVFS_CAMERA_ID			= 0x00000012,
+
+	/* DO NOT UPDATE NOW */
+	DVFS_THERMALD_ID		= 0x00000100,
+
+	DVFS_MAX_ID
+};
+
+
+int set_freq_limit(unsigned long id, unsigned int freq);
+#endif
+
 /*********************************************************************
  *                      CPUFREQ DRIVER INTERFACE                     *
  *********************************************************************/
@@ -286,7 +327,6 @@ cpufreq_verify_within_cpu_limits(struct cpufreq_policy *policy)
 
 #define CPUFREQ_TRANSITION_NOTIFIER	(0)
 #define CPUFREQ_POLICY_NOTIFIER		(1)
-#define CPUFREQ_GOVINFO_NOTIFIER	(2)
 
 /* Transition notifiers */
 #define CPUFREQ_PRECHANGE		(0)
@@ -303,25 +343,12 @@ cpufreq_verify_within_cpu_limits(struct cpufreq_policy *policy)
 #define CPUFREQ_CREATE_POLICY		(5)
 #define CPUFREQ_REMOVE_POLICY		(6)
 
-/* Govinfo Notifiers */
-#define CPUFREQ_LOAD_CHANGE		(0)
-
 #ifdef CONFIG_CPU_FREQ
 int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list);
 int cpufreq_unregister_notifier(struct notifier_block *nb, unsigned int list);
 
 void cpufreq_notify_transition(struct cpufreq_policy *policy,
 		struct cpufreq_freqs *freqs, unsigned int state);
-/*
- * Governor specific info that can be passed to modules that subscribe
- * to CPUFREQ_GOVINFO_NOTIFIER
- */
-struct cpufreq_govinfo {
-	unsigned int cpu;
-	unsigned int load;
-	unsigned int sampling_rate_us;
-};
-extern struct atomic_notifier_head cpufreq_govinfo_notifier_list;
 
 #else /* CONFIG_CPU_FREQ */
 static inline int cpufreq_register_notifier(struct notifier_block *nb,

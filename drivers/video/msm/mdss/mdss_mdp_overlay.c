@@ -1566,6 +1566,11 @@ int mdss_mdp_overlay_kickoff(struct msm_fb_data_type *mfd,
 	}
 
 	mdss_fb_update_notify_update(mfd);
+
+#if defined(CONFIG_FB_MSM_MDSS_SAMSUNG)
+	mdss_mdp_ctl_intf_event(mdp5_data->ctl, MDSS_SAMSUNG_EVENT_FRAME_UPDATE, ctl);
+#endif
+
 commit_fail:
 	ATRACE_BEGIN("overlay_cleanup");
 	mdss_mdp_overlay_cleanup(mfd, &destroy_pipes);
@@ -1962,18 +1967,6 @@ static void mdss_mdp_overlay_pan_display(struct msm_fb_data_type *mfd)
 		goto pan_display_error;
 	}
 
-	ret = mdss_mdp_overlay_get_fb_pipe(mfd, &pipe,
-					MDSS_MDP_MIXER_MUX_LEFT);
-	if (ret) {
-		pr_err("unable to allocate base pipe\n");
-		goto pan_display_error;
-	}
-
-	if (mdss_mdp_pipe_map(pipe)) {
-		pr_err("unable to map base pipe\n");
-		goto pan_display_error;
-	}
-
 	ret = mdss_mdp_overlay_start(mfd);
 	if (ret) {
 		pr_err("unable to start overlay %d (%d)\n", mfd->index, ret);
@@ -1983,6 +1976,18 @@ static void mdss_mdp_overlay_pan_display(struct msm_fb_data_type *mfd)
 	ret = mdss_iommu_ctrl(1);
 	if (IS_ERR_VALUE(ret)) {
 		pr_err("IOMMU attach failed\n");
+		goto pan_display_error;
+	}
+
+	ret = mdss_mdp_overlay_get_fb_pipe(mfd, &pipe,
+					MDSS_MDP_MIXER_MUX_LEFT);
+	if (ret) {
+		pr_err("unable to allocate base pipe\n");
+		goto pan_display_error;
+	}
+
+	if (mdss_mdp_pipe_map(pipe)) {
+		pr_err("unable to map base pipe\n");
 		goto pan_display_error;
 	}
 
@@ -2194,7 +2199,7 @@ static ssize_t dynamic_fps_sysfs_wta_dfps(struct device *dev,
 		rc = mdss_mdp_ctl_update_fps(mdp5_data->ctl, dfps);
 	}
 	if (!rc) {
-		pr_debug("%s: configured to '%d' FPS\n", __func__, dfps);
+		pr_info("%s: configured to '%d' FPS\n", __func__, dfps);
 	} else {
 		pr_err("Failed to configure '%d' FPS. rc = %d\n",
 							dfps, rc);

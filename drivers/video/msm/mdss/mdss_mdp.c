@@ -98,7 +98,7 @@ static struct mdss_panel_intf pan_types[] = {
 	{"edp", MDSS_PANEL_INTF_EDP},
 	{"hdmi", MDSS_PANEL_INTF_HDMI},
 };
-static char mdss_mdp_panel[MDSS_MAX_PANEL_LEN];
+char mdss_mdp_panel[MDSS_MAX_PANEL_LEN];
 
 struct mdss_iommu_map_type mdss_iommu_map[MDSS_IOMMU_MAX_DOMAIN] = {
 	[MDSS_IOMMU_DOMAIN_UNSECURE] = {
@@ -170,8 +170,6 @@ static int mdss_mdp_parse_dt_prefill(struct platform_device *pdev);
 static int mdss_mdp_parse_dt_misc(struct platform_device *pdev);
 static int mdss_mdp_parse_dt_ad_cfg(struct platform_device *pdev);
 static int mdss_mdp_parse_dt_bus_scale(struct platform_device *pdev);
-static int mdss_iommu_attach(struct mdss_data_type *mdata);
-static int mdss_iommu_dettach(struct mdss_data_type *mdata);
 
 /**
  * mdss_mdp_vbif_axi_halt() - Halt MDSS AXI ports
@@ -385,7 +383,6 @@ static int mdss_mdp_bus_scale_set_quota(u64 ab_quota_rt, u64 ab_quota_nrt,
 			vect = &bw_table->usecase[new_uc_idx].vectors[i];
 			vect->ab = ab_quota[i];
 			vect->ib = ib_quota[i];
-
 			pr_debug("uc_idx=%d %s path idx=%d ab=%llu ib=%llu\n",
 				new_uc_idx, (i < rt_axi_port_cnt) ? "rt" : "nrt"
 				, i, vect->ab, vect->ib);
@@ -669,18 +666,18 @@ int mdss_iommu_ctrl(int enable)
 		__builtin_return_address(0), enable, mdata->iommu_ref_cnt);
 
 	if (enable) {
-		if (mdata->iommu_ref_cnt == 0) {
-			mdss_bus_scale_set_quota(MDSS_HW_IOMMU, SZ_1M, SZ_1M);
+		/*
+		 * delay iommu attach until continous splash screen has
+		 * finished handoff, as it may still be working with phys addr
+		 */
+		if (!mdata->iommu_attached && !mdata->handoff_pending)
 			rc = mdss_iommu_attach(mdata);
-		}
 		mdata->iommu_ref_cnt++;
 	} else {
 		if (mdata->iommu_ref_cnt) {
 			mdata->iommu_ref_cnt--;
-			if (mdata->iommu_ref_cnt == 0) {
+			if (mdata->iommu_ref_cnt == 0)
 				rc = mdss_iommu_dettach(mdata);
-				mdss_bus_scale_set_quota(MDSS_HW_IOMMU, 0, 0);
-			}
 		} else {
 			pr_err("unbalanced iommu ref\n");
 		}
@@ -846,9 +843,7 @@ static inline int mdss_mdp_irq_clk_register(struct mdss_data_type *mdata,
 	return 0;
 }
 
-#define SEC_DEVICE_MDSS		1
-
-static void __mdss_restore_sec_cfg(struct mdss_data_type *mdata)
+void __mdss_restore_sec_cfg(struct mdss_data_type *mdata)
 {
 	int ret, scm_ret = 0;
 
@@ -944,7 +939,7 @@ static int mdss_mdp_irq_clk_setup(struct mdss_data_type *mdata)
 	return 0;
 }
 
-static int mdss_iommu_attach(struct mdss_data_type *mdata)
+int mdss_iommu_attach(struct mdss_data_type *mdata)
 {
 	struct iommu_domain *domain;
 	struct mdss_iommu_map_type *iomap;
@@ -983,7 +978,7 @@ end:
 	return rc;
 }
 
-static int mdss_iommu_dettach(struct mdss_data_type *mdata)
+int mdss_iommu_dettach(struct mdss_data_type *mdata)
 {
 	struct iommu_domain *domain;
 	struct mdss_iommu_map_type *iomap;
@@ -1013,7 +1008,7 @@ static int mdss_iommu_dettach(struct mdss_data_type *mdata)
 	return 0;
 }
 
-static int mdss_iommu_init(struct mdss_data_type *mdata)
+int mdss_iommu_init(struct mdss_data_type *mdata)
 {
 	struct msm_iova_layout layout;
 	struct iommu_domain *domain;
@@ -1128,6 +1123,8 @@ int mdss_hw_init(struct mdss_data_type *mdata)
 	char *offset;
 	struct mdss_mdp_pipe *vig;
 
+	mdss_mdp_clk_ctrl(MDP_BLOCK_POWER_ON);
+
 	mdss_hw_rev_init(mdata);
 
 	/* disable hw underrun recovery */
@@ -1168,6 +1165,8 @@ int mdss_hw_init(struct mdss_data_type *mdata)
 	if (mdata->mdp_rev == MDSS_MDP_HW_REV_200)
 		for (i = 0; i < mdata->nvig_pipes; i++)
 			mdss_mdp_hscl_init(&vig[i]);
+
+		mdss_mdp_clk_ctrl(MDP_BLOCK_POWER_OFF);
 
 	pr_debug("MDP hw init done\n");
 
@@ -1464,6 +1463,17 @@ static int mdss_mdp_probe(struct platform_device *pdev)
 	atomic_set(&mdata->sd_client_count, 0);
 	atomic_set(&mdata->active_intf_cnt, 0);
 
+	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "mdp_phys");
+	if (!res) {
+		pr_err("unable to get MDP base address\n");
+		rc = -ENOMEM;
+		goto probe_done;
+	}
+
+	mdata->mdp_reg_size = resource_size(res);
+	mdata->mdss_base = devm_ioremap(&pdev->dev, res->start,
+				       mdata->mdp_reg_size);
+
 	mdss_res->mdss_util = mdss_get_util_intf();
 	if (mdss_res->mdss_util == NULL) {
 		pr_err("Failed to get mdss utility functions\n");
@@ -1491,7 +1501,7 @@ static int mdss_mdp_probe(struct platform_device *pdev)
 		pr_err("unable to map MDSS VBIF base\n");
 		goto probe_done;
 	}
-	pr_debug("MDSS VBIF HW Base addr=0x%x len=0x%x\n",
+	pr_err("MDSS VBIF HW Base addr=0x%x len=0x%x\n",
 		(int) (unsigned long) mdata->vbif_io.base,
 		mdata->vbif_io.len);
 

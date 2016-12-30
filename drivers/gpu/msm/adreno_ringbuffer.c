@@ -235,27 +235,29 @@ static int _load_firmware(struct kgsl_device *device, const char *fwfile,
 	return (*data != NULL) ? 0 : -ENOMEM;
 }
 
-int adreno_ringbuffer_read_pm4_ucode(struct kgsl_device *device)
+void adreno_ringbuffer_read_pm4_ucode(struct kgsl_device *device)
 {
 	struct adreno_device *adreno_dev = ADRENO_DEVICE(device);
-	int ret;
 
 	if (adreno_dev->pm4_fw == NULL) {
 		int len;
 		void *ptr;
 
-		ret = _load_firmware(device,
+		int ret = _load_firmware(device,
 			adreno_dev->gpucore->pm4fw_name, &ptr, &len);
 
 		if (ret)
+		{
+			if((ret == -EAGAIN) && (system_state == SYSTEM_POWER_OFF))
+				return;
 			goto err;
+		}
 
 		/* PM4 size is 3 dword aligned plus 1 dword of version */
 		if (len % ((sizeof(uint32_t) * 3)) != sizeof(uint32_t)) {
 			KGSL_DRV_ERR(device, "Bad pm4 microcode size: %d\n",
 				len);
 			kfree(ptr);
-			ret = -ENOMEM;
 			goto err;
 		}
 
@@ -264,12 +266,11 @@ int adreno_ringbuffer_read_pm4_ucode(struct kgsl_device *device)
 		adreno_dev->pm4_fw_version = adreno_dev->pm4_fw[1];
 	}
 
-	return 0;
+	return;
 
 err:
-	KGSL_DRV_CRIT(device, "Failed to read pm4 microcode %s\n",
+	KGSL_DRV_FATAL(device, "Failed to read pm4 microcode %s\n",
 		adreno_dev->gpucore->pm4fw_name);
-	return ret;
 }
 
 /**
@@ -295,26 +296,28 @@ static inline int adreno_ringbuffer_load_pm4_ucode(struct kgsl_device *device,
 	return 0;
 }
 
-int adreno_ringbuffer_read_pfp_ucode(struct kgsl_device *device)
+void adreno_ringbuffer_read_pfp_ucode(struct kgsl_device *device)
 {
 	struct adreno_device *adreno_dev = ADRENO_DEVICE(device);
-	int ret;
 
 	if (adreno_dev->pfp_fw == NULL) {
 		int len;
 		void *ptr;
 
-		ret = _load_firmware(device,
+		int ret = _load_firmware(device,
 			adreno_dev->gpucore->pfpfw_name, &ptr, &len);
 		if (ret)
+		{
+			if((ret == -EAGAIN) && (system_state == SYSTEM_POWER_OFF))
+				return;
 			goto err;
+		}
 
 		/* PFP size shold be dword aligned */
 		if (len % sizeof(uint32_t) != 0) {
 			KGSL_DRV_ERR(device, "Bad PFP microcode size: %d\n",
 				len);
 			kfree(ptr);
-			ret = -ENOMEM;
 			goto err;
 		}
 
@@ -323,7 +326,7 @@ int adreno_ringbuffer_read_pfp_ucode(struct kgsl_device *device)
 		adreno_dev->pfp_fw_version = adreno_dev->pfp_fw[5];
 	}
 
-	return 0;
+	return;
 
 err:
 	KGSL_DRV_FATAL(device, "Failed to read pfp microcode %s\n",

@@ -593,7 +593,7 @@ config HID_SAITEK
 
 config HID_SAMSUNG
 	tristate "Samsung InfraRed remote control or keyboards"
-	depends on HID
+	depends on USB_HID
 	---help---
 	Support for Samsung InfraRed remote control or keyboards.
 
@@ -662,6 +662,13 @@ config SMARTJOYPLUS_FF
 	---help---
 	Say Y here if you have a SmartJoy PLUS PS2/USB adapter and want to
 	enable force feedback support for it.
+
+config HID_SYNAPTICS_BT
+	tristate "HID Synaptics"
+	depends on HID
+	default n
+	---help---
+	For a Bluetooth HID touchpad
 
 config HID_TIVO
 	tristate "TiVo Slide Bluetooth remote control support"

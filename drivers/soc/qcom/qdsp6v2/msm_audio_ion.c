@@ -79,7 +79,7 @@ int msm_audio_ion_alloc(const char *name, struct ion_client **client,
 				err_ion_ptr = PTR_ERR((int *)(*handle));
 			pr_err("%s:ION alloc fail err ptr=%ld, smmu_enabled=%d\n",
 			__func__, err_ion_ptr, msm_audio_ion_data.smmu_enabled);
-			rc = -ENOMEM;
+				rc = -ENOMEM;
 			goto err_ion_client;
 		}
 	} else {

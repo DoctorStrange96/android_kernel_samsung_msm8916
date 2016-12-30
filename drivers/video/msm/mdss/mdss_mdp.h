@@ -55,7 +55,7 @@
 #define C0_G_Y		0	/* G/luma */
 
 /* wait for at most 2 vsync for lowest refresh rate (24hz) */
-#define KOFF_TIMEOUT msecs_to_jiffies(84)
+#define KOFF_TIMEOUT msecs_to_jiffies(1000)
 
 #define OVERFETCH_DISABLE_TOP		BIT(0)
 #define OVERFETCH_DISABLE_BOTTOM	BIT(1)
@@ -241,6 +241,7 @@ struct mdss_mdp_ctl {
 	int (*display_fnc) (struct mdss_mdp_ctl *ctl, void *arg);
 	int (*wait_fnc) (struct mdss_mdp_ctl *ctl, void *arg);
 	int (*wait_pingpong) (struct mdss_mdp_ctl *ctl, void *arg);
+	int (*wait_video_pingpong) (struct mdss_mdp_ctl *ctl, void *arg);
 	u32 (*read_line_cnt_fnc) (struct mdss_mdp_ctl *);
 	int (*add_vsync_handler) (struct mdss_mdp_ctl *,
 					struct mdss_mdp_vsync_handler *);
@@ -721,6 +722,8 @@ static inline u32 left_lm_w_from_mfd(struct msm_fb_data_type *mfd)
 }
 
 irqreturn_t mdss_mdp_isr(int irq, void *ptr);
+int mdss_iommu_attach(struct mdss_data_type *mdata);
+int mdss_iommu_dettach(struct mdss_data_type *mdata);
 void mdss_mdp_irq_clear(struct mdss_data_type *mdata,
 		u32 intr_type, u32 intf_num);
 int mdss_mdp_irq_enable(u32 intr_type, u32 intf_num);
@@ -739,6 +742,9 @@ int mdss_mdp_vsync_clk_enable(int enable);
 void mdss_mdp_clk_ctrl(int enable);
 struct mdss_data_type *mdss_mdp_get_mdata(void);
 int mdss_mdp_secure_display_ctrl(unsigned int enable);
+
+#define SEC_DEVICE_MDSS		1
+void __mdss_restore_sec_cfg(struct mdss_data_type *mdata);
 
 int mdss_mdp_overlay_init(struct msm_fb_data_type *mfd);
 int mdss_mdp_overlay_req_check(struct msm_fb_data_type *mfd,
@@ -820,8 +826,9 @@ int mdss_mdp_display_wait4pingpong(struct mdss_mdp_ctl *ctl);
 int mdss_mdp_display_wakeup_time(struct mdss_mdp_ctl *ctl,
 				 ktime_t *wakeup_time);
 
-int mdss_mdp_csc_setup(u32 block, u32 blk_idx, u32 csc_type);
-int mdss_mdp_csc_setup_data(u32 block, u32 blk_idx, struct mdp_csc_cfg *data);
+int mdss_mdp_csc_setup(u32 block, u32 blk_idx, u32 tbl_idx, u32 csc_type);
+int mdss_mdp_csc_setup_data(u32 block, u32 blk_idx, u32 tbl_idx,
+				   struct mdp_csc_cfg *data);
 
 int mdss_mdp_pp_init(struct device *dev);
 void mdss_mdp_pp_term(struct device *dev);

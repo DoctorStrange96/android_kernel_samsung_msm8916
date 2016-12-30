@@ -7389,6 +7389,113 @@ struct afe_lpass_digital_clk_config_command {
 	struct afe_digital_clk_cfg clk_cfg;
 } __packed;
 
+#ifdef CONFIG_SAMSUNG_AUDIO
+#define ASM_MODULE_ID_PP_SA                 0x10001fa0
+#define ASM_PARAM_ID_PP_SA_PARAMS           0x10001fa1
+
+#define ASM_MODULE_ID_PP_SA_MSP             0x10001ff0
+#define ASM_MODULE_ID_PP_SA_MSP_PARAM       0x10001ff1
+
+#define ASM_MODULE_ID_PP_SA_VSP             0x10001fb0
+#define ASM_PARAM_ID_PP_SA_VSP_PARAMS       0x10001fb1
+
+#define ASM_MODULE_ID_PP_DHA                0x10001fc0
+#define ASM_PARAM_ID_PP_DHA_PARAMS          0x10001fc1
+
+#define ASM_MODULE_ID_PP_LRSM               0x10001fe0
+#define ASM_PARAM_ID_PP_LRSM_PARAMS         0x10001fe1
+
+#define ASM_MODULE_ID_PP_SA_EP              0x10001fd0
+#define ASM_PARAM_ID_PP_SA_EP_PARAMS        0x10001fd1
+#define ASM_PARAM_ID_PP_SA_EP_GET_PARAMS    0x10001fd2
+
+struct sa_params {
+	int16_t OutDevice;
+	int16_t Preset;
+	int32_t EqLev[7];
+	int16_t m3Dlevel;
+	int16_t BElevel;
+	int16_t CHlevel;
+	int16_t CHRoomSize; 
+	int16_t Clalevel;
+	int16_t volume;
+	int16_t Sqrow;
+	int16_t Sqcol;
+	int16_t TabInfo;
+	int16_t NewUI;
+} __packed;
+
+struct vsp_params {
+	uint32_t speed_int;
+} __packed ;
+
+struct dha_params {
+	int32_t enable;
+	int16_t gain[2][6];
+} __packed ;
+
+struct lrsm_params {
+	int16_t sm;
+	int16_t lr;
+} __packed ;
+
+struct sa_ep_params {
+	int32_t enable;
+	int32_t score;
+} __packed ;
+
+struct asm_stream_cmd_set_pp_params_sa {
+	struct apr_hdr	hdr;
+	struct asm_stream_cmd_set_pp_params_v2 param;
+	struct asm_stream_param_data_v2 data;
+
+	struct sa_params sa_param;
+} __packed;
+
+struct asm_stream_cmd_set_pp_params_vsp {
+	struct apr_hdr	hdr;
+	struct asm_stream_cmd_set_pp_params_v2 param;
+	struct asm_stream_param_data_v2 data;
+
+	uint32_t speed_int;
+} __packed;
+
+struct asm_stream_cmd_set_pp_params_dha {
+	struct apr_hdr	hdr;
+	struct asm_stream_cmd_set_pp_params_v2 param;
+	struct asm_stream_param_data_v2 data;
+
+	int32_t enable;
+	int16_t gain[2][6];
+} __packed;
+
+struct asm_stream_cmd_set_pp_params_lrsm {
+	struct apr_hdr	hdr;
+	struct asm_stream_cmd_set_pp_params_v2 param;
+	struct asm_stream_param_data_v2 data;
+
+	int16_t sm;
+	int16_t lr;
+} __packed;
+
+struct asm_stream_cmd_set_pp_params_sa_ep {
+	struct apr_hdr	hdr;
+	struct asm_stream_cmd_set_pp_params_v2 param;
+	struct asm_stream_param_data_v2 data;
+
+	int32_t enable;
+	int32_t score;
+} __packed;
+
+struct asm_stream_cmd_set_pp_params_msp {
+	struct apr_hdr	hdr;
+	struct asm_stream_cmd_set_pp_params_v2 param;
+	struct asm_stream_param_data_v2 data;
+
+	uint32_t msp_int;
+} __packed;
+#endif /* CONFIG_SAMSUNG_AUDIO */
+
 /*
  * Opcode for AFE to start DTMF.
  */

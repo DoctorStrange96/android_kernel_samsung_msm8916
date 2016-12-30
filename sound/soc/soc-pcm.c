@@ -695,6 +695,15 @@ static int soc_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
 		if (ret < 0)
 			return ret;
 	}
+
+#ifdef CONFIG_AUDIO_SPEAKER_OUT_MAXIM_AMP_ENABLE
+	if (rtd->dai_link->ops && rtd->dai_link->ops->trigger) {
+		ret = rtd->dai_link->ops->trigger(substream, cmd);
+		if (ret < 0) {
+			return ret;
+		}
+	}
+#endif /* CONFIG_AUDIO_SPEAKER_OUT_MAXIM_AMP_ENABLE */
 	return 0;
 }
 

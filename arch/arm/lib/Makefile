@@ -43,5 +43,7 @@ endif
 lib-$(CONFIG_ARCH_RPC)		+= ecard.o io-acorn.o floppydma.o
 lib-$(CONFIG_ARCH_SHARK)	+= io-shark.o
 
+lib-$(CONFIG_ADAPTIVE_KSM)	+= memcmp_ksm.o
+
 $(obj)/csumpartialcopy.o:	$(obj)/csumpartialcopygeneric.S
 $(obj)/csumpartialcopyuser.o:	$(obj)/csumpartialcopygeneric.S

@@ -326,6 +326,8 @@ static int handle_alloc_generic_req(void *req_h, void *req)
 			&mem_share_svc_alloc_generic_resp_desc, alloc_resp,
 			sizeof(alloc_resp));
 
+	kfree(alloc_resp);
+
 	if (rc < 0)
 		pr_err("In %s, Error sending the alloc request: %d\n",
 							__func__, rc);

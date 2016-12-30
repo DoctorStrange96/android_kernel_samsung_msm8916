@@ -121,7 +121,6 @@ struct disp_info_notify {
 	int value;
 	int is_suspend;
 	int ref_count;
-	bool init_done;
 };
 
 struct msm_sync_pt_data {
@@ -367,4 +366,8 @@ int mdss_fb_do_ioctl(struct fb_info *info, unsigned int cmd,
 		     unsigned long arg);
 int mdss_fb_compat_ioctl(struct fb_info *info, unsigned int cmd,
 			 unsigned long arg);
+#if defined(CONFIG_FB_MSM_MDSS_SAMSUNG)
+extern u8 csc_update;
+extern u8 csc_change;
+#endif
 #endif /* MDSS_FB_H */

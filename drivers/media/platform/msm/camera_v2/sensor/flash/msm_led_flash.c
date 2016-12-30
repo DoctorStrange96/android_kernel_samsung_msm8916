@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2009-2013, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -14,11 +14,15 @@
 #define pr_fmt(fmt) "%s:%d " fmt, __func__, __LINE__
 
 #include "msm_led_flash.h"
+#include <linux/of_gpio.h>
 
+/*#define CONFIG_MSMB_CAMERA_DEBUG*/
 #undef CDBG
-#define CDBG(fmt, args...) pr_debug(fmt, ##args)
-
-static struct v4l2_file_operations msm_led_flash_v4l2_subdev_fops;
+#ifdef CONFIG_MSMB_CAMERA_DEBUG
+#define CDBG(fmt, args...) pr_err(fmt, ##args)
+#else
+#define CDBG(fmt, args...) do { } while (0)
+#endif
 
 static long msm_led_flash_subdev_ioctl(struct v4l2_subdev *sd,
 	unsigned int cmd, void *arg)
@@ -82,14 +86,27 @@ int32_t msm_led_flash_create_v4lsubdev(struct platform_device *pdev, void *data)
 	fctrl->msm_sd.sd.entity.type = MEDIA_ENT_T_V4L2_SUBDEV;
 	fctrl->msm_sd.sd.entity.group_id = MSM_CAMERA_SUBDEV_LED_FLASH;
 	fctrl->msm_sd.close_seq = MSM_SD_CLOSE_2ND_CATEGORY | 0x1;
+#if defined(CONFIG_FLED_SM5701)
+	fctrl->led_irq_gpio1 = of_get_named_gpio(fctrl->pdev->dev.of_node, "flashen-gpio", 0);
+#else
+	fctrl->led_irq_gpio1 = of_get_named_gpio(fctrl->pdev->dev.of_node, "qcom,led1-gpio", 0);
+#endif
+	if (fctrl->led_irq_gpio1 < 0) {
+		pr_err("Fail : can't get led1-gpio\n");
+		return -EINVAL;
+	}
+#if defined(CONFIG_FLED_SM5701)
+	fctrl->led_irq_gpio2 = of_get_named_gpio(fctrl->pdev->dev.of_node, "flashtorch-gpio", 0);
+#else
+	fctrl->led_irq_gpio2 = of_get_named_gpio(fctrl->pdev->dev.of_node, "qcom,led2-gpio", 0);
+#endif
+	if (fctrl->led_irq_gpio2 < 0) {
+		pr_err("Fail : can't get led2-gpio\n");
+		return -EINVAL;
+	}
+
 	msm_sd_register(&fctrl->msm_sd);
 
-	msm_led_flash_v4l2_subdev_fops = v4l2_subdev_fops;
-#ifdef CONFIG_COMPAT
-	msm_led_flash_v4l2_subdev_fops.compat_ioctl32 =
-		msm_led_flash_v4l2_subdev_fops.unlocked_ioctl;
-#endif
-	fctrl->msm_sd.sd.devnode->fops = &msm_led_flash_v4l2_subdev_fops;
 	CDBG("probe success\n");
 	return 0;
 }

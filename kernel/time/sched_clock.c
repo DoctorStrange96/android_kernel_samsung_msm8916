@@ -18,6 +18,11 @@
 #include <linux/seqlock.h>
 #include <linux/bitops.h>
 
+#ifdef CONFIG_SEC_DEBUG
+#include <linux/sec_debug.h>
+extern void sec_debug_save_last_ns(unsigned long long last_ns);
+#endif
+
 struct clock_data {
 	ktime_t wrap_kt;
 	u64 epoch_ns;
@@ -70,7 +75,9 @@ static unsigned long long notrace sched_clock_32(void)
 	u64 epoch_cyc;
 	u64 cyc;
 	unsigned long seq;
-
+#ifdef CONFIG_SEC_DEBUG
+		u64 local;
+#endif
 	if (cd.suspended)
 		return cd.epoch_ns;
 
@@ -82,6 +89,11 @@ static unsigned long long notrace sched_clock_32(void)
 
 	cyc = read_sched_clock();
 	cyc = (cyc - epoch_cyc) & sched_clock_mask;
+#ifdef CONFIG_SEC_DEBUG
+	local = epoch_ns + cyc_to_ns(cyc, cd.mult, cd.shift);
+	sec_debug_save_last_ns(local);
+	return local;
+#endif
 	return epoch_ns + cyc_to_ns(cyc, cd.mult, cd.shift);
 }
 

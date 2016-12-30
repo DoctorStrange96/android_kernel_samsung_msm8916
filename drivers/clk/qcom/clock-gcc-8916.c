@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -237,6 +237,7 @@ static void __iomem *virt_bases[N_BASES];
 #define gpll0_source_val		1
 #define gpll0_aux_source_val		3
 #define gpll1_source_val		1
+#define gpll1_aux_source_val		2
 #define gpll2_source_val		2
 #define dsi0_phypll_mm_source_val	1
 
@@ -341,9 +342,7 @@ static DEFINE_VDD_REGULATORS(vdd_sr2_pll, VDD_SR2_PLL_NUM, 2,
 static struct pll_freq_tbl apcs_pll_freq[] = {
 	F_APCS_PLL( 998400000, 52, 0x0, 0x1, 0x0, 0x0, 0x0),
 	F_APCS_PLL(1094400000, 57, 0x0, 0x1, 0x0, 0x0, 0x0),
-	F_APCS_PLL(1152000000, 60, 0x0, 0x1, 0x0, 0x0, 0x0),
 	F_APCS_PLL(1190400000, 62, 0x0, 0x1, 0x0, 0x0, 0x0),
-	F_APCS_PLL(1209600000, 63, 0x0, 0x1, 0x0, 0x0, 0x0),
 	F_APCS_PLL(1248000000, 65, 0x0, 0x1, 0x0, 0x0, 0x0),
 	F_APCS_PLL(1401600000, 73, 0x0, 0x1, 0x0, 0x0, 0x0),
 	PLL_F_END
@@ -449,6 +448,7 @@ static struct pll_vote_clk gpll1_clk_src = {
 	},
 };
 
+DEFINE_EXT_CLK(gpll1_aux_clk_src, &gpll1_clk_src.c);
 static struct pll_vote_clk gpll2_clk_src = {
 	.en_reg = (void __iomem *)APCS_GPLL_ENA_VOTE,
 	.en_mask = BIT(2),
@@ -908,6 +908,7 @@ static struct rcg_clk jpeg0_clk_src = {
 static struct clk_freq_tbl ftbl_gcc_camss_mclk0_1_clk[] = {
 	F(   9600000,	      xo,   2,	  0,	0),
 	F(  23880000,      gpll0,   1,    2,   67),
+	F(  26022000,      gpll1_aux,   1,  1, 34),
 	F(  66670000,	   gpll0,  12,	  0,	0),
 	F_END
 };
@@ -1216,7 +1217,6 @@ static struct rcg_clk sdcc2_apps_clk_src = {
 
 static struct clk_freq_tbl ftbl_gcc_usb_hs_system_clk[] = {
 	F(  80000000,	   gpll0,  10,	  0,	0),
-	F( 100000000,	   gpll0,   8,	  0,	0),
 	F_END
 };
 
@@ -1229,7 +1229,7 @@ static struct rcg_clk usb_hs_system_clk_src = {
 	.c = {
 		.dbg_name = "usb_hs_system_clk_src",
 		.ops = &clk_ops_rcg,
-		VDD_DIG_FMAX_MAP2(LOW, 57140000, NOMINAL, 100000000),
+		VDD_DIG_FMAX_MAP2(LOW, 57140000, NOMINAL, 80000000),
 		CLK_INIT(usb_hs_system_clk_src.c),
 	},
 };

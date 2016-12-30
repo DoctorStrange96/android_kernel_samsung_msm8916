@@ -25,7 +25,7 @@
 
 #define SPLIT_MIXER_OFFSET 0x800
 /* wait for at most 2 vsync for lowest refresh rate (24hz) */
-#define KOFF_TIMEOUT msecs_to_jiffies(84)
+#define KOFF_TIMEOUT msecs_to_jiffies(1000)
 
 #define STOP_TIMEOUT(hz) msecs_to_jiffies((1000 / hz) * (VSYNC_EXPIRE_TICK + 2))
 #define POWER_COLLAPSE_TIME msecs_to_jiffies(100)
@@ -549,6 +549,12 @@ int mdss_mdp_cmd_reconfigure_splash_done(struct mdss_mdp_ctl *ctl, bool handoff)
 
 	pdata = ctl->panel_data;
 
+#if defined(CONFIG_FB_MSM_MDSS_SAMSUNG)
+	/* Turning off panel & mdp to initialize panel init-seq at kick-off*/
+	mdss_mdp_ctl_intf_event(ctl, MDSS_EVENT_BLANK, NULL);
+	mdss_mdp_ctl_intf_event(ctl, MDSS_EVENT_PANEL_OFF, NULL);
+#endif
+
 	mdss_mdp_ctl_intf_event(ctl, MDSS_EVENT_PANEL_CLK_CTRL, (void *)0);
 
 	pdata->panel_info.cont_splash_enabled = 0;
@@ -828,6 +834,10 @@ int mdss_mdp_cmd_kickoff(struct mdss_mdp_ctl *ctl, void *arg)
 	mdss_mdp_irq_enable(MDSS_MDP_IRQ_PING_PONG_COMP, ctx->pp_num);
 	if (sctx)
 		mdss_mdp_irq_enable(MDSS_MDP_IRQ_PING_PONG_COMP, sctx->pp_num);
+
+	if (ctl->mdata->mdp_rev == MDSS_MDP_HW_REV_105 ||
+			ctl->mdata->mdp_rev == MDSS_MDP_HW_REV_109)
+		mdss_mdp_ctl_intf_event(ctl, MDSS_EVENT_INTF_RESTORE, NULL);
 
 	mdss_mdp_ctl_write(ctl, MDSS_MDP_REG_CTL_START, 1);	/* Kickoff */
 

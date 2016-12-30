@@ -295,7 +295,7 @@ static int msm_comm_vote_bus(struct msm_vidc_core *core)
 	mutex_unlock(&core->lock);
 
 	rc = call_hfi_op(hdev, vote_bus, hdev->hfi_device_data, vote_data,
-			vote_data_count);
+			vote_data_count, core->idle_stats.fb_err_level);
 	if (rc)
 		dprintk(VIDC_ERR, "Failed to scale bus: %d\n", rc);
 
@@ -2159,7 +2159,7 @@ static int msm_comm_session_abort(struct msm_vidc_inst *inst)
 	} else {
 		rc = 0;
 	}
-	msm_comm_session_clean(inst);
+
 	return rc;
 }
 
@@ -2528,9 +2528,11 @@ static int msm_vidc_load_resources(int flipped_state,
 		dprintk(VIDC_ERR, "HW is overloaded, needed: %d max: %d\n",
 			num_mbs_per_sec, core->resources.max_load);
 		msm_vidc_print_running_insts(core);
+#if 0 /* Samsung skips the overloaded error return  */
 		inst->state = MSM_VIDC_CORE_INVALID;
 		msm_comm_kill_session(inst);
 		return -EBUSY;
+#endif		
 	}
 
 	hdev = core->device;
@@ -4333,7 +4335,9 @@ static int msm_vidc_load_supported(struct msm_vidc_inst *inst)
 				num_mbs_per_sec,
 				inst->core->resources.max_load);
 			msm_vidc_print_running_insts(inst->core);
+#if 0  /* Samsung skips the overloaded error return  */
 			return -EBUSY;
+#endif
 		}
 	}
 	return 0;

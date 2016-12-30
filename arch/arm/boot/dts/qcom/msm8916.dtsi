@@ -473,7 +473,6 @@
 		qcom,hsusb-otg-phy-type = <2>;
 		qcom,hsusb-otg-mode = <1>;
 		qcom,hsusb-otg-otg-control = <2>;
-		qcom,hsusb-otg-disable-reset;
 		qcom,dp-manual-pullup;
 		qcom,hsusb-otg-mpm-dpsehv-int = <49>;
 		qcom,hsusb-otg-mpm-dmsehv-int = <58>;
@@ -502,7 +501,7 @@
 		compatible = "qcom,android-usb";
 		reg = <0x086000c8 0xc8>;
 		qcom,pm-qos-latency = <2 1001 12701>;
-		qcom,streaming-func = "rndis","mtp";
+		qcom,streaming-func = "mtp";
 		qcom,android-usb-uicc-nluns = /bits/ 8 <1>;
 	};
 
@@ -1555,7 +1554,7 @@
 		qcom,scm_core_clk_src-freq = <80000000>;
 
 		qcom,pas-id = <9>;
-		qcom,proxy-timeout-ms = <100>;
+		qcom,proxy-timeout-ms = <5000>;
 		qcom,firmware-name = "venus";
 		linux,contiguous-region = <&venus_qseecom_mem>;
 	};
@@ -1662,6 +1661,7 @@
 		clock-names = "core_clk", "iface_clk", "bus_clk";
 		qcom,clock-configs = <0x1 0x0 0x0>;
 		qcom,sw-power-collapse;
+		qcom,enable-minimum-voting;
 		qcom,load-freq-tbl = <352800 228570000 0xffffffff>,
 			<352800 228570000 0x55555555>,
 			<244800 160000000 0xffffffff>,
@@ -1720,16 +1720,6 @@
 					<63 512 677600 1331000>, /* 720p 60 fps */
 					<63 512 677600 1331000>; /* 1080p 30 fps */
 				qcom,bus-configs = <0x030fcfff>;
-			};
-			qcom,msm-bus-client@2 {
-				qcom,msm-bus,name = "venus-arm9-ddr";
-				qcom,msm-bus,num-cases = <2>;
-				qcom,msm-bus,num-paths = <1>;
-				qcom,msm-bus,vectors-KBps =
-					<63 512 0 0>,
-					<63 512 1000 1000>;
-				qcom,bus-configs = <0x00000000>;
-				qcom,bus-passive;
 			};
 		};
 	};

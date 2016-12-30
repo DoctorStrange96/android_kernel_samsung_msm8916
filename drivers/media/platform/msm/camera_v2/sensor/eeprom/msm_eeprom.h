@@ -28,6 +28,7 @@ struct msm_eeprom_ctrl_t;
 	static struct mutex mutexname = __MUTEX_INITIALIZER(mutexname)
 
 #define PROPERTY_MAXSIZE 32
+#define EEPROM_FW_VERSION_OFFSET 48
 
 struct msm_eeprom_ctrl_t {
 	struct platform_device *pdev;

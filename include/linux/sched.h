@@ -162,7 +162,9 @@ extern unsigned long nr_running(void);
 extern unsigned long nr_iowait(void);
 extern unsigned long nr_iowait_cpu(int cpu);
 extern unsigned long this_cpu_load(void);
-
+#ifdef CONFIG_RUNTIME_COMPCACHE
+extern unsigned long this_cpu_loadx(int i);
+#endif /* CONFIG_RUNTIME_COMPCACHE */
 extern void sched_update_nr_prod(int cpu, unsigned long nr, bool inc);
 extern void sched_get_nr_running_avg(int *avg, int *iowait_avg);
 
@@ -1163,6 +1165,11 @@ struct task_struct {
 	struct sched_rt_entity rt;
 #ifdef CONFIG_SCHED_HMP
 	struct ravg ravg;
+	/*
+	 * 'init_load_pct' represents the initial task load assigned to children
+	 * of this task
+	 */
+	u32 init_load_pct;
 #endif
 #ifdef CONFIG_CGROUP_SCHED
 	struct task_group *sched_task_group;
@@ -1910,6 +1917,8 @@ sched_set_cpu_cstate(int cpu, int cstate, int wakeup_energy, int wakeup_latency)
 #ifdef CONFIG_SCHED_HMP
 
 extern int sched_set_boost(int enable);
+extern int sched_set_init_task_load(struct task_struct *p, int init_load_pct);
+extern u32 sched_get_init_task_load(struct task_struct *p);
 extern int sched_set_cpu_mostly_idle_load(int cpu, int mostly_idle_pct);
 extern int sched_get_cpu_mostly_idle_load(int cpu);
 extern int sched_set_cpu_mostly_idle_nr_run(int cpu, int nr_run);

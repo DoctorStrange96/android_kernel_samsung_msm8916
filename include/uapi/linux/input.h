@@ -475,6 +475,7 @@ struct input_keymap_entry {
 #define KEY_RFKILL		247	/* Key that controls all radios */
 
 #define KEY_MICMUTE		248	/* Mute / unmute the microphone */
+#define KEY_RECENT		254	/* recent  */
 
 /* Code 255 is reserved for special needs of AT keyboard driver */
 
@@ -535,6 +536,7 @@ struct input_keymap_entry {
 #define BTN_MODE		0x13c
 #define BTN_THUMBL		0x13d
 #define BTN_THUMBR		0x13e
+#define BTN_GAME		0x13f	/* Add game button for samsung bluetooth keypad */
 
 #define BTN_DIGI		0x140
 #define BTN_TOOL_PEN		0x140
@@ -853,7 +855,8 @@ struct input_keymap_entry {
 #define ABS_MT_DISTANCE		0x3b	/* Contact hover distance */
 #define ABS_MT_TOOL_X		0x3c	/* Center X tool position */
 #define ABS_MT_TOOL_Y		0x3d	/* Center Y tool position */
-
+#define ABS_MT_PALM		0x3e	/* palm touch */
+#define ABS_MT_GRIP		0x3f
 
 #define ABS_MAX			0x3f
 #define ABS_CNT			(ABS_MAX+1)

@@ -90,6 +90,21 @@ struct scm_desc {
 	u64 x5;
 };
 
+/* for KAP related calls */
+
+#define OEM_SVC_CALLS           0x03000000
+#define MAKE_OEM_SCM_CMD(svc_id, cmd_id)       ((((svc_id << 8) | (cmd_id)) & 0xFFFF) | OEM_SVC_CALLS)
+
+#define TZBSP_SVC_OEM_DMVERITY	245
+#define OEM_DMVERITY_CMD_ID	0x01
+#define	CMD_READ_KAP_STATUS	4
+#define	CMD_DISABLE_KAP		5
+typedef	struct {
+		uint32_t cmd_id;
+		uint32_t arg;
+} dmverity_data;
+int kap_status_scm_call(void);
+
 #ifdef CONFIG_MSM_SCM
 extern int scm_call(u32 svc_id, u32 cmd_id, const void *cmd_buf, size_t cmd_len,
 		void *resp_buf, size_t resp_len);

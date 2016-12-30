@@ -452,6 +452,9 @@ static int dwc3_otg_set_power(struct usb_phy *phy, unsigned mA)
 	static int power_supply_type;
 	struct dwc3_otg *dotg = container_of(phy->otg, struct dwc3_otg, otg);
 
+#ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
+	return 0;
+#endif
 
 	if (!dotg->psy || !dotg->charger) {
 		dev_err(phy->dev, "no usb power supply/charger registered\n");

@@ -80,7 +80,6 @@ static void handle_update(struct work_struct *work);
  */
 static BLOCKING_NOTIFIER_HEAD(cpufreq_policy_notifier_list);
 static struct srcu_notifier_head cpufreq_transition_notifier_list;
-struct atomic_notifier_head cpufreq_govinfo_notifier_list;
 
 static bool init_cpufreq_transition_notifier_list_called;
 static int __init init_cpufreq_transition_notifier_list(void)
@@ -90,15 +89,6 @@ static int __init init_cpufreq_transition_notifier_list(void)
 	return 0;
 }
 pure_initcall(init_cpufreq_transition_notifier_list);
-
-static bool init_cpufreq_govinfo_notifier_list_called;
-static int __init init_cpufreq_govinfo_notifier_list(void)
-{
-	ATOMIC_INIT_NOTIFIER_HEAD(&cpufreq_govinfo_notifier_list);
-	init_cpufreq_govinfo_notifier_list_called = true;
-	return 0;
-}
-pure_initcall(init_cpufreq_govinfo_notifier_list);
 
 static int off __read_mostly;
 static int cpufreq_disabled(void)
@@ -1473,9 +1463,6 @@ static unsigned int __cpufreq_get(unsigned int cpu)
 
 	ret_freq = cpufreq_driver->get(cpu);
 
-	if (!policy)
-		return ret_freq;
-
 	if (ret_freq && policy->cur &&
 		!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
 		/* verify no discrepancy between actual and
@@ -1648,8 +1635,7 @@ int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list)
 	if (cpufreq_disabled())
 		return -EINVAL;
 
-	WARN_ON(!init_cpufreq_transition_notifier_list_called ||
-		!init_cpufreq_govinfo_notifier_list_called);
+	WARN_ON(!init_cpufreq_transition_notifier_list_called);
 
 	switch (list) {
 	case CPUFREQ_TRANSITION_NOTIFIER:
@@ -1659,10 +1645,6 @@ int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list)
 	case CPUFREQ_POLICY_NOTIFIER:
 		ret = blocking_notifier_chain_register(
 				&cpufreq_policy_notifier_list, nb);
-		break;
-	case CPUFREQ_GOVINFO_NOTIFIER:
-		ret = atomic_notifier_chain_register(
-				&cpufreq_govinfo_notifier_list, nb);
 		break;
 	default:
 		ret = -EINVAL;
@@ -1697,10 +1679,6 @@ int cpufreq_unregister_notifier(struct notifier_block *nb, unsigned int list)
 	case CPUFREQ_POLICY_NOTIFIER:
 		ret = blocking_notifier_chain_unregister(
 				&cpufreq_policy_notifier_list, nb);
-		break;
-	case CPUFREQ_GOVINFO_NOTIFIER:
-		ret = atomic_notifier_chain_unregister(
-				&cpufreq_govinfo_notifier_list, nb);
 		break;
 	default:
 		ret = -EINVAL;
@@ -2161,6 +2139,8 @@ static int cpufreq_cpu_callback(struct notifier_block *nfb,
 		case CPU_ONLINE:
 			__cpufreq_add_dev(dev, NULL, frozen);
 			cpufreq_update_policy(cpu);
+                        //update permission of cpufreq gov policy
+                        kobject_uevent(&dev->kobj, KOBJ_ONLINE);
 			break;
 
 		case CPU_DOWN_PREPARE:

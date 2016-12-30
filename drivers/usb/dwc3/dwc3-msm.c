@@ -1733,6 +1733,11 @@ static int dwc3_msm_suspend(struct dwc3_msm *mdwc)
 		 */
 		if (!mdwc->pwr_event_irq)
 			enable_irq(mdwc->hs_phy_irq);
+
+#ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
+		if (dcp || !mdwc->vbus_active) // add SAMSUNG
+			disable_irq_wake(mdwc->hs_phy_irq);
+#endif
 	}
 
 	dev_info(mdwc->dev, "DWC3 in low power mode\n");
@@ -1879,6 +1884,11 @@ static int dwc3_msm_resume(struct dwc3_msm *mdwc)
 			disable_irq_wake(mdwc->hs_phy_irq);
 			mdwc->lpm_flags &= ~MDWC3_ASYNC_IRQ_WAKE_CAPABILITY;
 	}
+	/* it must DCP disconnect, re-enable HS_PHY wakeup IRQ */
+#ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
+	if ((mdwc->hs_phy_irq && dcp) || !mdwc->vbus_active) // add SAMSUNG
+		enable_irq_wake(mdwc->hs_phy_irq);
+#endif
 
 	dev_info(mdwc->dev, "DWC3 exited from low power mode\n");
 
@@ -2123,6 +2133,7 @@ error:
 
 static irqreturn_t msm_dwc3_irq(int irq, void *data)
 {
+#ifndef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
 	struct dwc3_msm *mdwc = data;
 	struct dwc3 *dwc = platform_get_drvdata(mdwc->dwc3);
 
@@ -2134,7 +2145,7 @@ static irqreturn_t msm_dwc3_irq(int irq, void *data)
 	} else {
 		pr_info_ratelimited("%s: IRQ outside LPM\n", __func__);
 	}
-
+#endif
 	return IRQ_HANDLED;
 }
 
@@ -3084,8 +3095,13 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 	/* usb_psy required only for vbus_notifications or charging support */
 	if (mdwc->ext_xceiv.otg_capability ||
 			!mdwc->charger.charging_disabled) {
+#if defined(CONFIG_BATTERY_SAMSUNG)
+		mdwc->usb_psy.name = "dwc-usb";
+		mdwc->usb_psy.type = POWER_SUPPLY_TYPE_UNKNOWN;
+#else
 		mdwc->usb_psy.name = "usb";
 		mdwc->usb_psy.type = POWER_SUPPLY_TYPE_USB;
+#endif
 		mdwc->usb_psy.supplied_to = dwc3_msm_pm_power_supplied_to;
 		mdwc->usb_psy.num_supplicants = ARRAY_SIZE(
 						dwc3_msm_pm_power_supplied_to);

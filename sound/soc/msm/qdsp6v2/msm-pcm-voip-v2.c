@@ -33,7 +33,11 @@
 #include "audio_ocmem.h"
 
 #define SHARED_MEM_BUF 2
+#ifdef CONFIG_SAMSUNG_AUDIO
+#define VOIP_MAX_Q_LEN 2
+#else
 #define VOIP_MAX_Q_LEN 10
+#endif
 #define VOIP_MAX_VOC_PKT_SIZE 4096
 #define VOIP_MIN_VOC_PKT_SIZE 320
 

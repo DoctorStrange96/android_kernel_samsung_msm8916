@@ -13,6 +13,7 @@
 #include <soc/qcom/camera2.h>
 #include "msm_camera_i2c.h"
 
+//#define CONFIG_MSMB_CAMERA_DEBUG 1
 #undef CDBG
 #ifdef CONFIG_MSMB_CAMERA_DEBUG
 #define CDBG(fmt, args...) pr_debug(fmt, ##args)
@@ -214,11 +215,6 @@ int32_t msm_camera_qup_i2c_write_seq(struct msm_camera_i2c_client *client,
 		S_I2C_DBG("%s byte %d: 0x%x\n", __func__,
 			len+1, buf[len+1]);
 		len = 2;
-	}
-	if (num_byte > I2C_SEQ_REG_DATA_MAX) {
-		pr_err("%s: num_byte=%d clamped to max supported %d\n",
-			__func__, num_byte, I2C_SEQ_REG_DATA_MAX);
-		num_byte = I2C_SEQ_REG_DATA_MAX;
 	}
 	for (i = 0; i < num_byte; i++) {
 		buf[i+len] = data[i];

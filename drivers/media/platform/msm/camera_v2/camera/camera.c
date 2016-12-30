@@ -474,7 +474,7 @@ static int camera_v4l2_fh_open(struct file *filep)
 	/* stream_id = open id */
 	stream_id = atomic_read(&pvdev->opened);
 	sp->stream_id = find_first_zero_bit(
-		(const unsigned long *)&stream_id, MSM_CAMERA_STREAM_CNT_BITS);
+		&stream_id, MSM_CAMERA_STREAM_CNT_BITS);
 	pr_debug("%s: Found stream_id=%d\n", __func__, sp->stream_id);
 
 	v4l2_fh_init(&sp->fh, pvdev->vdev);
@@ -559,6 +559,11 @@ static int camera_v4l2_open(struct file *filep)
 	if (!atomic_read(&pvdev->opened)) {
 		pm_stay_awake(&pvdev->vdev->dev);
 
+#if !defined(CONFIG_ARCH_MSM8939) && !defined(CONFIG_ARCH_MSM8929)
+		/* Disable power collapse latency */
+		msm_pm_qos_update_request(CAMERA_DISABLE_PC_LATENCY);
+#endif
+
 		/* create a new session when first opened */
 		rc = msm_create_session(pvdev->vdev->num, pvdev->vdev);
 		if (rc < 0) {
@@ -568,7 +573,7 @@ static int camera_v4l2_open(struct file *filep)
 		}
 
 		rc = msm_create_command_ack_q(pvdev->vdev->num,
-			find_first_zero_bit((const unsigned long *)&opn_idx,
+			find_first_zero_bit(&opn_idx,
 				MSM_CAMERA_STREAM_CNT_BITS));
 		if (rc < 0) {
 			pr_err("%s : creation of command_ack queue failed\n",
@@ -594,7 +599,7 @@ static int camera_v4l2_open(struct file *filep)
 		}
 	} else {
 		rc = msm_create_command_ack_q(pvdev->vdev->num,
-			find_first_zero_bit((const unsigned long *)&opn_idx,
+			find_first_zero_bit(&opn_idx,
 				MSM_CAMERA_STREAM_CNT_BITS));
 		if (rc < 0) {
 			pr_err("%s : creation of command_ack queue failed Line %d rc %d\n",
@@ -602,8 +607,9 @@ static int camera_v4l2_open(struct file *filep)
 			goto session_fail;
 		}
 	}
-	idx |= (1 << find_first_zero_bit((const unsigned long *)&opn_idx,
-				MSM_CAMERA_STREAM_CNT_BITS));
+	pr_debug("%s: Open stream_id=%d\n", __func__,
+		   find_first_zero_bit(&opn_idx, MSM_CAMERA_STREAM_CNT_BITS));
+	idx |= (1 << find_first_zero_bit(&opn_idx, MSM_CAMERA_STREAM_CNT_BITS));
 	atomic_cmpxchg(&pvdev->opened, opn_idx, idx);
 	return rc;
 
@@ -661,12 +667,18 @@ static int camera_v4l2_close(struct file *filep)
 		camera_pack_event(filep, MSM_CAMERA_DEL_SESSION, 0, -1, &event);
 
 		/* Donot wait, imaging server may have crashed */
-		msm_post_event(&event, -1);
+		msm_post_event(&event, MSM_POST_EVT_TIMEOUT);
 		msm_delete_command_ack_q(pvdev->vdev->num, 0);
 
 		/* This should take care of both normal close
 		 * and application crashes */
 		msm_destroy_session(pvdev->vdev->num);
+
+#if !defined(CONFIG_ARCH_MSM8939) && !defined(CONFIG_ARCH_MSM8929)
+		/* Enable power collapse latency */
+		msm_pm_qos_update_request(CAMERA_ENABLE_PC_LATENCY);
+#endif
+
 		pm_relax(&pvdev->vdev->dev);
 	} else {
 		camera_pack_event(filep, MSM_CAMERA_SET_PARM,

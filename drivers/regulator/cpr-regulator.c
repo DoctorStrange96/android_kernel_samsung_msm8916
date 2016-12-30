@@ -1400,6 +1400,13 @@ static int cpr_pvs_per_corner_init(struct device_node *of_node,
 				cpr_vreg->pvs_corner_v[i],
 				cpr_vreg->step_volt) *
 				cpr_vreg->step_volt;
+#if defined(CONFIG_APC_CPR_QUOT_BOOST)
+		cpr_vreg->pvs_corner_v[i] += 50000;
+		if (cpr_vreg->pvs_corner_v[i] > cpr_vreg->fuse_ceiling_volt[i])
+		{
+			cpr_vreg->pvs_corner_v[i] = cpr_vreg->fuse_ceiling_volt[i];
+		}
+#endif
 		cpr_debug(cpr_vreg, "corner %d: sign = %d, steps = %d, volt = %d uV\n",
 			i, sign, steps, cpr_vreg->pvs_corner_v[i]);
 		fuse_sel += 4;
@@ -2986,6 +2993,9 @@ static int cpr_init_cpr_efuse(struct platform_device *pdev,
 		/* Unpack the target quotient by scaling. */
 		cpr_vreg->cpr_fuse_target_quot[i] *= quot_scale[i].multiplier;
 		cpr_vreg->cpr_fuse_target_quot[i] += quot_scale[i].offset;
+#if defined(CONFIG_APC_CPR_QUOT_BOOST)
+		cpr_vreg->cpr_fuse_target_quot[i] += 104;
+#endif
 		cpr_info(cpr_vreg,
 			"Corner[%d]: ro_sel = %d, target quot = %d\n", i,
 			cpr_vreg->cpr_fuse_ro_sel[i],

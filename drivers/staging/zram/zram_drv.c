@@ -70,7 +70,7 @@ static int zram_show_mem_notifier(struct notifier_block *nb,
 			u64 val;
 			u64 data_size;
 
-			val = zs_get_total_size_bytes(meta->mem_pool);
+			val = zs_get_total_pages(meta->mem_pool);
 			data_size = atomic64_read(&zram->stats.compr_size);
 			pr_info("Zram[%d] mem_used_total = %llu\n", i, val);
 			pr_info("Zram[%d] compr_data_size = %llu\n", i,
@@ -181,10 +181,10 @@ static ssize_t mem_used_total_show(struct device *dev,
 
 	down_read(&zram->init_lock);
 	if (zram->init_done)
-		val = zs_get_total_size_bytes(meta->mem_pool);
+		val = zs_get_total_pages(meta->mem_pool);
 	up_read(&zram->init_lock);
 
-	return sprintf(buf, "%llu\n", val);
+	return sprintf(buf, "%llu\n", val << PAGE_SHIFT);
 }
 
 static int zram_test_flag(struct zram_meta *meta, u32 index,
@@ -269,7 +269,7 @@ static struct zram_meta *zram_meta_alloc(u64 disksize)
 	}
 
 	meta->mem_pool = zs_create_pool(GFP_NOIO | __GFP_HIGHMEM |
-					__GFP_NOWARN);
+					__GFP_NOWARN, NULL);
 	if (!meta->mem_pool) {
 		pr_err("Error creating memory pool\n");
 		goto free_table;
@@ -908,7 +908,6 @@ static int create_device(struct zram *zram, int device_id)
 	zram->disk->private_data = zram;
 	snprintf(zram->disk->disk_name, 16, "zram%d", device_id);
 
-	__set_bit(QUEUE_FLAG_FAST, &zram->queue->queue_flags);
 	/* Actual capacity set using syfs (/sys/block/zram<id>/disksize */
 	set_capacity(zram->disk, 0);
 

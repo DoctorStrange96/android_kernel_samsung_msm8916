@@ -45,6 +45,10 @@
 #include "pm-boot.h"
 #include "../../../arch/arm/mach-msm/clock.h"
 
+#ifdef CONFIG_SEC_DEBUG
+#include <linux/sec_debug.h>
+#endif
+
 #define SCM_CMD_TERMINATE_PC	(0x2)
 #define SCM_CMD_CORE_HOTPLUGGED (0x10)
 #define SCM_FLUSH_FLAG_MASK	(0x3)
@@ -268,6 +272,9 @@ static bool __ref msm_pm_spm_power_collapse(
 			cpu, __func__, entry);
 
 	msm_jtag_save_state();
+#ifdef CONFIG_SEC_DEBUG
+	secdbg_sched_msg("+pc(I:%d,R:%d)", from_idle, notify_rpm);
+#endif
 
 #ifdef CONFIG_CPU_V7
 	collapsed = save_cpu_regs ?
@@ -275,6 +282,10 @@ static bool __ref msm_pm_spm_power_collapse(
 #else
 	collapsed = save_cpu_regs ?
 		!cpu_suspend(0) : msm_pm_pc_hotplug();
+#endif
+
+#ifdef CONFIG_SEC_DEBUG
+	secdbg_sched_msg("-pc(%d)", collapsed);
 #endif
 
 	msm_jtag_restore_state();
@@ -889,15 +900,25 @@ static int __init msm_pm_drv_init(void)
 
 	rc = platform_driver_register(&msm_cpu_pm_snoc_client_driver);
 
-	if (rc) {
+	if (rc)
 		pr_err("%s(): failed to register driver %s\n", __func__,
 				msm_cpu_pm_snoc_client_driver.driver.name);
 		return rc;
-	}
-
-	return platform_driver_register(&msm_cpu_pm_driver);
 }
 late_initcall(msm_pm_drv_init);
+
+static int __init msm_pm_debug_counters_init(void)
+{
+	int rc;
+
+	rc = platform_driver_register(&msm_cpu_pm_driver);
+
+	if (rc)
+		pr_err("%s(): failed to register driver %s\n", __func__,
+				msm_cpu_pm_driver.driver.name);
+	return rc;
+}
+fs_initcall(msm_pm_debug_counters_init);
 
 int __init msm_pm_sleep_status_init(void)
 {

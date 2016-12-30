@@ -34,6 +34,10 @@
 static struct v4l2_device *msm_v4l2_dev;
 static struct list_head    ordered_sd_list;
 
+#if !defined(CONFIG_ARCH_MSM8939) && !defined(CONFIG_ARCH_MSM8929)
+static struct pm_qos_request msm_v4l2_pm_qos_request;
+#endif
+
 static struct msm_queue_head *msm_session_q;
 
 /* config node envent queue */
@@ -42,6 +46,11 @@ spinlock_t msm_eventq_lock;
 
 static struct pid *msm_pid;
 spinlock_t msm_pid_lock;
+static int  module_init_status;
+struct msm_cam_dummy_queue {
+	wait_queue_head_t state_wait;
+};
+static struct msm_cam_dummy_queue cam_dummy_queue;
 
 #define msm_dequeue(queue, type, member) ({				\
 	unsigned long flags;					\
@@ -187,6 +196,29 @@ static inline int __msm_queue_find_command_ack_q(void *d1, void *d2)
 	return (ack->stream_id == *(unsigned int *)d2) ? 1 : 0;
 }
 
+#if !defined(CONFIG_ARCH_MSM8939) && !defined(CONFIG_ARCH_MSM8929)
+static void msm_pm_qos_add_request(void)
+{
+	pr_err("%s: add request",__func__);
+	pm_qos_add_request(&msm_v4l2_pm_qos_request, PM_QOS_CPU_DMA_LATENCY,
+		PM_QOS_DEFAULT_VALUE);
+}
+
+static void msm_pm_qos_remove_request(void)
+{
+	pr_err("%s: remove request",__func__);
+	msm_v4l2_pm_qos_request.type = PM_QOS_REQ_AFFINE_CORES;
+	msm_v4l2_pm_qos_request.cpus_affine.bits[0] = 0xF0;
+
+	pm_qos_remove_request(&msm_v4l2_pm_qos_request);
+}
+
+void msm_pm_qos_update_request(int val)
+{
+	pr_err("%s: update request %d",__func__,val);
+	pm_qos_update_request(&msm_v4l2_pm_qos_request, val);
+}
+#endif
 
 struct msm_session *msm_session_find(unsigned int session_id)
 {
@@ -335,6 +367,24 @@ int msm_sd_unregister(struct msm_sd_subdev *msm_subdev)
 		return -EINVAL;
 
 	v4l2_device_unregister_subdev(&msm_subdev->sd);
+	return 0;
+}
+
+int msm_cam_get_module_init_status(void)
+{
+	int rc;
+	pr_warn("msm_cam_get_module_init_status : start\n");
+	if (module_init_status == 1)
+		return 0;
+	while (1) {
+		rc = wait_event_interruptible(cam_dummy_queue.state_wait,
+			(module_init_status == 1));
+		if (rc == -ETIMEDOUT)
+			continue;
+		else if (rc == 0)
+			break;
+	}
+	pr_err("msm_cam_get_module_init_status : end %d\n", rc);
 	return 0;
 }
 
@@ -506,7 +556,6 @@ int msm_destroy_session(unsigned int session_id)
 {
 	struct msm_session *session;
 	struct v4l2_subdev *buf_mgr_subdev;
-	struct msm_sd_close_ioctl session_info;
 
 	session = msm_queue_find(msm_session_q, struct msm_session,
 		list, __msm_queue_find_session, &session_id);
@@ -520,10 +569,8 @@ int msm_destroy_session(unsigned int session_id)
 		list, session);
 	buf_mgr_subdev = msm_buf_mngr_get_subdev();
 	if (buf_mgr_subdev) {
-		session_info.session = session_id;
-		session_info.stream = 0;
 		v4l2_subdev_call(buf_mgr_subdev, core, ioctl,
-			MSM_SD_SHUTDOWN, &session_info);
+			MSM_SD_SHUTDOWN, NULL);
 	} else {
 		pr_err("%s: Buff manger device node is NULL\n", __func__);
 	}
@@ -557,6 +604,13 @@ static long msm_private_ioctl(struct file *file, void *fh,
 	unsigned int session_id;
 	unsigned int stream_id;
 	unsigned long spin_flags = 0;
+
+	if (cmd == MSM_CAM_V4L2_IOCTL_NOTIFY_MODULE_STATUS) {
+		module_init_status = *(int *) arg;
+		if (module_init_status)
+			wake_up(&cam_dummy_queue.state_wait);
+		return rc;
+	}
 
 	session_id = event_data->session_id;
 	stream_id = event_data->stream_id;
@@ -746,8 +800,7 @@ int msm_post_event(struct v4l2_event *event, int timeout)
 		if (!rc) {
 			pr_err("%s: Timed out\n", __func__);
 			msm_print_event_error(event);
-			mutex_unlock(&session->lock);
-			return -ETIMEDOUT;
+			rc = -ETIMEDOUT;
 		} else {
 			pr_err("%s: Error: No timeout but list empty!",
 					__func__);
@@ -799,6 +852,11 @@ static int msm_close(struct file *filep)
 	if (!list_empty(&msm_v4l2_dev->subdevs))
 		list_for_each_entry(msm_sd, &ordered_sd_list, list)
 			__msm_sd_close_subdevs(msm_sd, &sd_close);
+
+#if !defined(CONFIG_ARCH_MSM8939) && !defined(CONFIG_ARCH_MSM8929)
+	/* remove msm_v4l2_pm_qos_request */
+	msm_pm_qos_remove_request();
+#endif
 
 	/* send v4l2_event to HAL next*/
 	msm_queue_traverse_action(msm_session_q, struct msm_session, list,
@@ -855,6 +913,11 @@ static int msm_open(struct file *filep)
 	spin_lock_irqsave(&msm_eventq_lock, flags);
 	msm_eventq = filep->private_data;
 	spin_unlock_irqrestore(&msm_eventq_lock, flags);
+
+#if !defined(CONFIG_ARCH_MSM8939) && !defined(CONFIG_ARCH_MSM8929)
+	/* register msm_v4l2_pm_qos_request */
+	msm_pm_qos_add_request();
+#endif
 
 	return rc;
 }
@@ -1077,6 +1140,7 @@ static int msm_probe(struct platform_device *pdev)
 	spin_lock_init(&msm_eventq_lock);
 	spin_lock_init(&msm_pid_lock);
 	INIT_LIST_HEAD(&ordered_sd_list);
+	init_waitqueue_head(&cam_dummy_queue.state_wait);
 	goto probe_end;
 
 v4l2_fail:

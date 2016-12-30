@@ -258,7 +258,7 @@ config SND_SOC_MSM8X16
 	select SND_DYNAMIC_MINORS
 	select QTI_PP
 	select DTS_SRS_TM
-	select DOLBY_DAP
+#	select DOLBY_DAP # removed by samsung due to not use.
 	select DOLBY_DS2
 	select MSM_QDSP6_APRV3
 	select MSM_QDSP6V2_CODECS
@@ -346,4 +346,29 @@ config SND_SOC_MSMZIRC
 	 interfaces with DSP, also it will enable
 	 the machine drivers and the corresponding
 	 DAI-links.
+config SAMSUNG_AUDIO
+	tristate "samsung audio feature"
+	help
+	 To add support for samsung audio solution
+
+config AUDIO_SPEAKER_OUT_NXP_AMP_ENABLE
+	tristate "samsung audio speaker NXP amp feature"
+	help
+	 To add support for speaker NXP amp
+
+config AUDIO_SPEAKER_OUT_MAXIM_AMP_ENABLE
+	tristate "samsung audio speaker maxim amp feature"
+	help
+	 To add support for speaker maxim amp
+
+config AUDIO_SECONDARY_MIC_USE_EXT_BIAS_ENABLE
+	tristate "samsung audio use external LDO bias for seconardy mic bias"
+	help
+	 To add support for external mic bias
+
+config AUDIO_QUAT_I2S_ENABLE
+	tristate "QUAT_I2S feature"
+	help
+	 To add support for quat_i2s
+
 endmenu

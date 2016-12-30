@@ -67,10 +67,14 @@ static void *smem_ipc_log_ctx;
 	} while (0)
 
 #define SMEM_SPINLOCK_SMEM_ALLOC       "S:3"
-
+#ifdef CONFIG_SEC_DEBUG_SUBSYS
+void *smem_ram_base;
+phys_addr_t smem_ram_phys;
+#else
 static void *smem_ram_base;
-static resource_size_t smem_ram_size;
 static phys_addr_t smem_ram_phys;
+#endif
+static resource_size_t smem_ram_size;
 static remote_spinlock_t remote_spinlock;
 static uint32_t num_smem_areas;
 static struct smem_area *smem_areas;
@@ -1292,7 +1296,10 @@ smem_targ_info_done:
 	}
 
 	smem_ram_base = ioremap_nocache(smem_ram_phys, smem_ram_size);
-
+#ifdef CONFIG_SEC_DEBUG_SUBSYS
+	pr_info("%s: smem_ram_base=0x%x  smem_ram_phys=0x%x smem_ram_size=0x%x \n",
+			__func__,(unsigned int)smem_ram_base,smem_ram_phys,smem_ram_size);
+#endif
 	if (!smem_ram_base) {
 		LOG_ERR("%s: ioremap_nocache() of addr:%pa size: %pa\n",
 				__func__,

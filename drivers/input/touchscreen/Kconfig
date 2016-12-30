@@ -1020,8 +1020,6 @@ config TOUCHSCREEN_GT9XX
 
           If unsure, say N.
 
-source "drivers/input/touchscreen/gt9xx/Kconfig"
-
 config TOUCHSCREEN_BU21150
 	tristate "JDI AFE BU21150"
 	depends on SPI_MASTER
@@ -1044,4 +1042,18 @@ config INPUT_MT_WRAPPER
 
 	  If unsure, say N.
 
+config TOUCH_KEY_LED
+	tristate "Touch Key Led"
+	help
+	  This enables support for Touch Key Led.
+
+	  Say Y here if you want to enable the driver.
+
+	  If unsure, say N.
+
+source "drivers/input/touchscreen/gt9xx/Kconfig"
+source "drivers/input/touchscreen/imagis_core3/Kconfig"
+source "drivers/input/touchscreen/imagis_30xxc/Kconfig"
+source "drivers/input/touchscreen/zinitix/Kconfig"
+source "drivers/input/touchscreen/zinitix_j1/Kconfig"
 endif
