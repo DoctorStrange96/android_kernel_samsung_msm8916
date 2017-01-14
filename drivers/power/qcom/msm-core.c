@@ -422,7 +422,8 @@ static long msm_core_ioctl(struct file *file, unsigned int cmd,
 	struct sched_params __user *argp = (struct sched_params __user *)arg;
 	int i, cpu = num_possible_cpus();
 	int mpidr;
-	int cluster, cpumask;
+	int cluster;
+	int cpumask;
 
 	if (!argp)
 		return -EINVAL;
