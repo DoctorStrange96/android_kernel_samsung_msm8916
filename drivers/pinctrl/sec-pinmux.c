@@ -28,7 +28,7 @@
 #ifdef CONFIG_SEC_PM_DEBUG
 static DEFINE_SPINLOCK(gpiomux_lock);
 #else
-#error CONFIG_SEC_PM_DEBUG NOT FOUND!
+//#error CONFIG_SEC_PM_DEBUG NOT FOUND!
 #endif
 static unsigned msm_gpiomux_ngpio;
 #ifdef CONFIG_SEC_GPIO_DVS
