@@ -1977,6 +1977,8 @@ sched_set_cpu_cstate(int cpu, int cstate, int wakeup_energy, int wakeup_latency)
 
 #ifdef CONFIG_SCHED_HMP
 extern int sched_set_boost(int enable);
+extern int sched_set_init_task_load(struct task_struct *p, int init_load_pct);
+extern u32 sched_get_init_task_load(struct task_struct *p);
 #else
 static inline int sched_set_boost(int enable)
 {
