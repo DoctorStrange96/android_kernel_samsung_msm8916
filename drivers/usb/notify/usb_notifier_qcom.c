@@ -147,7 +147,10 @@ static int otg_accessory_power(bool enable)
 	return ret;
 }
 
+#ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
 extern void set_ncm_ready(bool ready);
+#endif
+
 static int qcom_set_peripheral(bool enable)
 {
 	struct power_supply *psy;
@@ -164,8 +167,10 @@ static int qcom_set_peripheral(bool enable)
 		check_usb_vbus_state(pdata->g_ndev.gadget_state);
 	}
 
+#ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
 	if(!enable)
 		set_ncm_ready(false);
+#endif
 
 	pr_info("%s %d, enable=%d\n", __func__, __LINE__, enable);
 	psy = power_supply_get_by_name("msm-usb");
