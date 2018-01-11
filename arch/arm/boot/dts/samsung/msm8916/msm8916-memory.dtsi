@@ -19,14 +19,6 @@
 /* Additionally Reserved 4MB for TIMA and  the TZ app size
  * is 5MB [total 9 MB ]
  */
-		pstore_reserve_mem: pstore_reserve_region@0 {
-			linux,reserve-contiguous-region;
-			linux,reserve-region;
-			linux,remove-completely;
-			reg = <0x0 0x85900000 0x0 0x00100000>;
-			label = "pstore_reserve_mem";
-		};
-		
 		external_image_mem: external_image__region@0 {
 			linux,reserve-contiguous-region;
 			linux,reserve-region;
@@ -57,6 +49,14 @@
 			linux,remove-completely;
 			reg = <0x0 0x8C600000 0x0 0x0500000>;
 			label = "venus_mem";
+		};
+		
+		pstore_reserve_mem: pstore_reserve_region@0 {
+			linux,reserve-contiguous-region;
+			linux,reserve-region;
+			linux,remove-completely;
+			reg = <0x0 0x8CB00000 0x0 0x00200000>;
+			label = "pstore_reserve_mem";
 		};
 
 		secure_mem: secure_region@0 {
@@ -92,10 +92,10 @@
 		status = "ok";
 
 		/* This is tacked at the end of pheripheral_region@0 */
-		android,ramoops-buffer-start = <0x85900000>;
-		android,ramoops-buffer-size = <0x100000>;
-		android,ramoops-console-size = <0x80000>;
-		android,ramoops-record-size = <0x20000>;
+		android,ramoops-buffer-start = <0x8CB00000>;
+		android,ramoops-buffer-size = <0x200000>;
+		android,ramoops-console-size = <0x100000>;
+		android,ramoops-record-size = <0x10000>;
 		android,ramoops-dump-oops = <0x1>;
 	};
 };
