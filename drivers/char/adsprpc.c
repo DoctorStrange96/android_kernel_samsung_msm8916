@@ -521,7 +521,7 @@ static int context_alloc(struct fastrpc_apps *me, uint32_t kernel,
 				struct smq_invoke_ctx **po)
 {
 	int err = 0, bufs, ii, size = 0;
-	struct smq_invoke_ctx *ctx = 0;
+	struct smq_invoke_ctx *ctx = NULL;
 	struct smq_context_list *clst = &me->clst;
 
 	struct fastrpc_ioctl_invoke *invoke = &invokefd->inv;
