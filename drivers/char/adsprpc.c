@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012,2018 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2015, 2018 The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -506,7 +506,7 @@ static int context_alloc(struct fastrpc_apps *me, uint32_t kernel,
 				struct file_data *fdata,
 				struct smq_invoke_ctx **po)
 {
-	int err = 0, bufs, size = 0;
+	int err = 0, bufs, ii, size = 0;
 	struct smq_invoke_ctx *ctx = NULL;
 	struct smq_context_list *clst = &me->clst;
 	struct fastrpc_ioctl_invoke *invoke = &invokefd->inv;
