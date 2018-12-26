@@ -45,18 +45,9 @@ STATIC inline int INIT unlz4(u8 *input, int in_len,
 	u8 *outp;
 	int size = in_len;
 #ifdef PREBOOT
-	size_t out_len;
+	size_t out_len = get_unaligned_le32(input + in_len);
 #endif
 	size_t dest_len;
-
-	if (input == NULL) {
-		error("NULL input pointer");
-		goto exit_0;
-	}
-
-#ifdef PREBOOT
-	out_len = get_unaligned_le32(input + in_len);
-#endif
 
 	if (output) {
 		outp = output;

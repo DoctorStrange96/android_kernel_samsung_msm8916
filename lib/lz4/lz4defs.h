@@ -12,7 +12,7 @@
  * Detects 64 bits mode
  */
 #if (defined(__x86_64__) || defined(__x86_64) || defined(__amd64__) \
-	|| defined(__ppc64__) || defined(__LP64__))
+    || defined(__ppc64__) || defined(__LP64__))
 #define LZ4_ARCH64 1
 #else
 #define LZ4_ARCH64 0
@@ -21,13 +21,14 @@
 /*
  * Architecture-specific macros
  */
+#define ARM_EFFICIENT_UNALIGNED_ACCESS
 #define BYTE	u8
 typedef struct _U16_S { u16 v; } U16_S;
 typedef struct _U32_S { u32 v; } U32_S;
 typedef struct _U64_S { u64 v; } U64_S;
 #if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS)		\
-	|| defined(CONFIG_ARM) && __LINUX_ARM_ARCH__ >= 6	\
-	&& defined(ARM_EFFICIENT_UNALIGNED_ACCESS)
+    || defined(CONFIG_ARM) && __LINUX_ARM_ARCH__ >= 6	\
+    && defined(ARM_EFFICIENT_UNALIGNED_ACCESS)
 
 #define A16(x) (((U16_S *)(x))->v)
 #define A32(x) (((U32_S *)(x))->v)
@@ -36,10 +37,10 @@ typedef struct _U64_S { u64 v; } U64_S;
 #define PUT4(s, d) (A32(d) = A32(s))
 #define PUT8(s, d) (A64(d) = A64(s))
 #define LZ4_WRITE_LITTLEENDIAN_16(p, v)	\
-	do {	\
-		A16(p) = v; \
-		p += 2; \
-	} while (0)
+    do {	\
+	A16(p) = v; \
+	p += 2; \
+    } while (0)
 #else /* CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS */
 
 #define A64(x) get_unaligned((u64 *)&(((U16_S *)(x))->v))
@@ -47,15 +48,15 @@ typedef struct _U64_S { u64 v; } U64_S;
 #define A16(x) get_unaligned((u16 *)&(((U16_S *)(x))->v))
 
 #define PUT4(s, d) \
-	put_unaligned(get_unaligned((const u32 *) s), (u32 *) d)
+    put_unaligned(get_unaligned((const u32 *) s), (u32 *) d)
 #define PUT8(s, d) \
-	put_unaligned(get_unaligned((const u64 *) s), (u64 *) d)
+    put_unaligned(get_unaligned((const u64 *) s), (u64 *) d)
 
 #define LZ4_WRITE_LITTLEENDIAN_16(p, v)	\
-	do {	\
-		put_unaligned(v, (u16 *)(p)); \
-		p += 2; \
-	} while (0)
+    do {	\
+	put_unaligned(v, (u16 *)(p)); \
+	p += 2; \
+    } while (0)
 #endif
 
 #define COPYLENGTH 8
@@ -81,30 +82,30 @@ typedef struct _U64_S { u64 v; } U64_S;
 #define HASHLOG64K	((MEMORY_USAGE - 2) + 1)
 #define HASH64KTABLESIZE	(1U << HASHLOG64K)
 #define LZ4_HASH_VALUE(p)	(((A32(p)) * 2654435761U) >> \
-				((MINMATCH * 8) - (MEMORY_USAGE-2)))
+		((MINMATCH * 8) - (MEMORY_USAGE-2)))
 #define LZ4_HASH64K_VALUE(p)	(((A32(p)) * 2654435761U) >> \
-				((MINMATCH * 8) - HASHLOG64K))
+		((MINMATCH * 8) - HASHLOG64K))
 #define HASH_VALUE(p)		(((A32(p)) * 2654435761U) >> \
-				((MINMATCH * 8) - HASH_LOG))
+		((MINMATCH * 8) - HASH_LOG))
 
 #if LZ4_ARCH64/* 64-bit */
 #define STEPSIZE 8
 
 #define LZ4_COPYSTEP(s, d)	\
-	do {			\
-		PUT8(s, d);	\
-		d += 8;		\
-		s += 8;		\
-	} while (0)
+    do {			\
+	PUT8(s, d);	\
+	d += 8;		\
+	s += 8;		\
+    } while (0)
 
 #define LZ4_COPYPACKET(s, d)	LZ4_COPYSTEP(s, d)
 
 #define LZ4_SECURECOPY(s, d, e)			\
-	do {					\
-		if (d < e) {			\
-			LZ4_WILDCOPY(s, d, e);	\
-		}				\
-	} while (0)
+    do {					\
+	if (d < e) {			\
+	    LZ4_WILDCOPY(s, d, e);	\
+	}				\
+    } while (0)
 #define HTYPE u32
 
 #ifdef __BIG_ENDIAN
@@ -117,17 +118,17 @@ typedef struct _U64_S { u64 v; } U64_S;
 #define STEPSIZE 4
 
 #define LZ4_COPYSTEP(s, d)	\
-	do {			\
-		PUT4(s, d);	\
-		d += 4;		\
-		s += 4;		\
-	} while (0)
+    do {			\
+	PUT4(s, d);	\
+	d += 4;		\
+	s += 4;		\
+    } while (0)
 
 #define LZ4_COPYPACKET(s, d)		\
-	do {				\
-		LZ4_COPYSTEP(s, d);	\
-		LZ4_COPYSTEP(s, d);	\
-	} while (0)
+    do {				\
+	LZ4_COPYSTEP(s, d);	\
+	LZ4_COPYSTEP(s, d);	\
+    } while (0)
 
 #define LZ4_SECURECOPY	LZ4_WILDCOPY
 #define HTYPE const u8*
@@ -141,16 +142,16 @@ typedef struct _U64_S { u64 v; } U64_S;
 #endif
 
 #define LZ4_READ_LITTLEENDIAN_16(d, s, p) \
-	(d = s - get_unaligned_le16(p))
+    (d = s - get_unaligned_le16(p))
 
 #define LZ4_WILDCOPY(s, d, e)		\
-	do {				\
-		LZ4_COPYPACKET(s, d);	\
-	} while (d < e)
+    do {				\
+	LZ4_COPYPACKET(s, d);	\
+    } while (d < e)
 
 #define LZ4_BLINDCOPY(s, d, l)	\
-	do {	\
-		u8 *e = (d) + l;	\
-		LZ4_WILDCOPY(s, d, e);	\
-		d = e;	\
-	} while (0)
+    do {	\
+	u8 *e = (d) + l;	\
+	LZ4_WILDCOPY(s, d, e);	\
+	d = e;	\
+    } while (0)
