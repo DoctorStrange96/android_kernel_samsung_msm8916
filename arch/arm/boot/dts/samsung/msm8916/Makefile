@@ -306,6 +306,9 @@ ifeq ($(CONFIG_SEC_FORTUNA_PROJECT),y)
 		dtb-y += msm8916-sec-fortuna-eur-r00.dtb
 		dtb-y += msm8916-sec-fortuna-eur-r01.dtb
 		dtb-y += msm8916-sec-fortuna-eur-r02.dtb
+	else ifeq ($(CONFIG_MACH_FORTUNA3G_LTN_DTV),y)
+		dtb-y += msm8916-sec-fortunadtv-r00.dtb
+		dtb-y += msm8916-sec-fortunadtv-r01.dtb
 	else ifeq ($(CONFIG_MACH_FORTUNA3G_EUR),y)
 		dtb-y += msm8916-sec-fortuna-r00.dtb
 		dtb-y += msm8916-sec-fortuna-r01.dtb
@@ -366,7 +369,6 @@ ifeq ($(CONFIG_SEC_FORTUNA_PROJECT),y)
 		dtb-y += msm8916-sec-fortuna-r10.dtb
 		dtb-y += msm8916-sec-fortuna-r11.dtb
         endif
-
 endif
 
 ifeq ($(CONFIG_SEC_ROSSA_PROJECT),y)
