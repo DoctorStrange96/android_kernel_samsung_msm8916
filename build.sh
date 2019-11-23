@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 # Initial set-up
 [ ! -d out ] && mkdir out;
@@ -36,17 +36,18 @@ if [ ! -f out/arch/arm/boot/zImage ]; then
 fi;
 
 # Don't do anything if the build fails
-if [ $BUILD_FAILED != "true" ]; then
+if [[ "$BUILD_FAILED" != "true" ]]; then
 	# Build finish date/time
 	export BUILD_FINISH_TIME=`date +"%Y%m%d-%H%M%S"`;
 
+	[ -f $MAIN_DIR/$VERSION/dt.img ] && rm -f $MAIN_DIR/$VERSION/dt.img;
 	./dtbtool -o $MAIN_DIR/$VERSION/dt.img -s 2048 -p out/scripts/dtc/ out/arch/arm/boot/dts/;
 	cp out/arch/$ARCH/boot/zImage $MAIN_DIR/$VERSION;
 
 	# For Lineage 14.1 only: copy kernel modules
-	[ ! -d $MAIN_DIR/VERSION/modules/system/lib/modules ] && mkdir -p $MAIN_DIR/VERSION/modules/system/lib/modules;
-	rm -f $MAIN_DIR/VERSION/modules/system/lib/modules/*;
-	find ./out -type f -iname "*.ko" -exec cp {} $MAIN_DIR/VERSION/modules/system/lib/modules/ \;
+	[ ! -d $MAIN_DIR/$VERSION/modules/system/lib/modules ] && mkdir -p $MAIN_DIR/$VERSION/modules/system/lib/modules;
+	rm -f $MAIN_DIR/$VERSION/modules/system/lib/modules/*;
+	find ./out -type f -iname "*.ko" -exec cp {} $MAIN_DIR/$VERSION/modules/system/lib/modules/ \;
 
 	# Flashable zip
 	echo -e "Creating flashable zip...\n";
