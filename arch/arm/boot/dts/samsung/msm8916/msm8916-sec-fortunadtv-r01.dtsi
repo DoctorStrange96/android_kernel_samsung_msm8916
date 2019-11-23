@@ -42,6 +42,7 @@
 	};
 
 	i2c@78b9000 { /* BLSP1 QUP5 */
+		status = "ok";
 		bt532_ts_device@20 {
 			compatible = "zinitix,bt541_ts_device";
 			reg = <0x20>;
@@ -60,6 +61,27 @@
 			zinitix,orientation = <0>;
 			zinitix,tsp_vdd_supply_type = <0>;
 			zinitix,pname = "SM-G5308W";
+		};
+		ist30xx_ts@50 {
+			compatible = "imagis,ist30xx-ts";
+			reg = <0x50>;
+			interrupt-parent = <&msm_gpio>;
+			interrupts = <13 0>;
+			pinctrl-names = "keyled_en_gpio_active", "keyled_en_gpio_suspend", "tsp_int_active", "tsp_en_gpio_active", "tsp_en_gpio_suspend", "tsp_id_gpio_active", "tsp_id_gpio_suspend";
+			pinctrl-0 = <&keyled_en_active>;
+			pinctrl-1 = <&keyled_en_suspend>;
+			pinctrl-2 = <&int_active>;
+			pinctrl-3 = <&tsp_en_active>;
+			pinctrl-4 = <&tsp_en_suspend>;
+			pinctrl-5 = <&tsp_id_active>;
+			pinctrl-6 = <&tsp_id_suspend>;
+			
+			vdd_en-gpio = <&msm_gpio 73 0x01>;
+			keyled_en-gpio = <&msm_gpio 60 0x01>;
+			tsp_id-gpio =  <&msm_gpio 56 0x01>;
+	//		vcc_i2c-supply = <&pm8916_l6>;
+			imagis,irq-gpio = <&msm_gpio 13 0x00>;
+			imagis,i2c-pull-up = <1>;
 		};
 	};
 
