@@ -30,15 +30,30 @@ export OUT_DIR="$MAIN_DIR/products";
 echo -e "Building...\n";
 make msm8916_sec_defconfig O="out";
 make -j4 O="out";
-# Build finish date/time
-export BUILD_FINISH_TIME=`date +"%Y%m%d-%H%M%S"`;
 
-./dtbtool -o $MAIN_DIR/$VERSION/dt.img -s 2048 -p out/scripts/dtc/ out/arch/arm/boot/dts/;
-cp out/arch/$ARCH/boot/zImage $MAIN_DIR/$VERSION;
+if [ ! -f out/arch/arm/boot/zImage ]; then
+	 export BUILD_FAILED="true";
+fi;
 
-# Flashable zip
-echo -e "Creating flashable zip...\n";
-cd $MAIN_DIR/common;
-zip -r9 $OUT_DIR/$VERSION/$VERSION-"kernel"-$DEVICE-$BUILD_FINISH_TIME.zip . > /dev/null;
-cd $MAIN_DIR/$VERSION;
-zip -r9 $OUT_DIR/$VERSION/$VERSION-"kernel"-$DEVICE-$BUILD_FINISH_TIME.zip . > /dev/null;
+# Don't do anything if the build fails
+if [ $BUILD_FAILED != "true" ]; then
+	# Build finish date/time
+	export BUILD_FINISH_TIME=`date +"%Y%m%d-%H%M%S"`;
+
+	./dtbtool -o $MAIN_DIR/$VERSION/dt.img -s 2048 -p out/scripts/dtc/ out/arch/arm/boot/dts/;
+	cp out/arch/$ARCH/boot/zImage $MAIN_DIR/$VERSION;
+
+	# For Lineage 14.1 only: copy kernel modules
+	[ ! -d $MAIN_DIR/VERSION/modules/system/lib/modules ] && mkdir -p $MAIN_DIR/VERSION/modules/system/lib/modules;
+	rm -f $MAIN_DIR/VERSION/modules/system/lib/modules/*;
+	find ./out -type f -iname "*.ko" -exec cp {} $MAIN_DIR/VERSION/modules/system/lib/modules/ \;
+
+	# Flashable zip
+	echo -e "Creating flashable zip...\n";
+	cd $MAIN_DIR/common;
+	zip -r9 $OUT_DIR/$VERSION/$VERSION-"kernel"-$DEVICE-$BUILD_FINISH_TIME.zip . > /dev/null;
+	cd $MAIN_DIR/$VERSION;
+	zip -r9 $OUT_DIR/$VERSION/$VERSION-"kernel"-$DEVICE-$BUILD_FINISH_TIME.zip . > /dev/null;	
+else
+	echo -e "Build failed.";
+fi;
