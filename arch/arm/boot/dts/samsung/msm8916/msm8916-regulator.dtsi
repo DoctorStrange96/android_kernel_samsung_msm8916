@@ -102,6 +102,7 @@
 					<11 1478400000>,
 					<12 1612800000>;
 		qcom,speed-bin-fuse-sel = <1 34 3 0>;
+		qcom,pvs-version-fuse-sel = <0 55 2 0>;
 		qcom,cpr-speed-bin-max-corners =
 					<0 0 2 4 12>,
 					<0 1 2 4 7>,

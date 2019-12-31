@@ -353,10 +353,12 @@
 		qcom,sensor-id = <0 1 2 4 5>;
 	};
 
-	qcom,clock-a7@0b011050 {
+	clock_cpu: qcom,clock-a7@0b011050 {
 		compatible = "qcom,clock-a53-8916";
-		reg = <0x0b011050 0x8>;
-		reg-names = "rcg-base";
+		reg = <0x0b011050 0x8>,
+		      <0x0005c004 0x8>,
+		      <0x0005c00c 0x8>;
+		reg-names = "rcg-base", "efuse1", "efuse";
 		qcom,safe-freq = < 400000000 >;
 		cpu-vdd-supply = <&apc_vreg_corner>;
 		clocks = <&clock_gcc clk_gpll0_ao_clk_src>,
@@ -370,7 +372,6 @@
 			<  800000000 4>,
 			<  998400000 5>,
 			< 1094400000 6>,
-			< 1190400000 7>,
 			< 1152000000 7>,
 			< 1209600000 8>,
 			< 1363200000 9>,
@@ -461,9 +462,8 @@
 			cpu-to-dev-map =
 				 <  400000  762>,
 				 <  800000  1525>,
-				 <  998400  3051>,
 				 < 1094400  3051>,
-				 < 1190400  4066>;
+				 < 1152000  4066>;
 		};
 	};
 
