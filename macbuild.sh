@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 # Initial set-up
 export ROOT_DIR="/Volumes/GrandPrimeKernel";
