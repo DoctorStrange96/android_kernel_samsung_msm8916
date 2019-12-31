@@ -371,7 +371,7 @@ KBUILD_CPPFLAGS := -D__KERNEL__
 KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
-		   -pipe -marm -mtune=cortex-a53 -mfpu=neon-vfpv4 \
+		   -pipe -marm -mfpu=neon-vfpv4 \
            -mvectorize-with-neon-quad -fgcse-after-reload -fgcse-sm -fmodulo-sched -fmodulo-sched-allow-regmoves \
            -funswitch-loops -fpredictive-commoning -fno-inline-functions \
            -fno-pic -Wno-format-security -Wno-unused -Wno-maybe-uninitialized \
