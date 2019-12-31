@@ -87,7 +87,6 @@
 					<27 0 6 0>;
 		qcom,cpr-init-voltage-ref = <1050000 1150000 1375000>;
 		qcom,cpr-init-voltage-step = <10000>;
-		qcom,cpr-corner-map = <1 1 2 2 3 3 3>;
 		qcom,cpr-corner-map = <1 1 2 2 3 3 3 3 3 3 3 3>;
 		qcom,cpr-corner-frequency-map =
 					<1 200000000>,
