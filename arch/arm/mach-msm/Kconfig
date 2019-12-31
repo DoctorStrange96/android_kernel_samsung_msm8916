@@ -423,6 +423,13 @@ config MACH_FORTUNA3G_EUR
 	help
 	  Support for Samsung FORTUNA 3G Europe Open device.
 
+config MACH_FORTUNA3G_LTN_DTV
+	depends on SEC_FORTUNA_PROJECT
+	default n
+	bool "Samsung FORTUNA 3G Latin America DTV"
+	help
+	  Support for Samsung FORTUNA 3G Latin America DTV device.
+
 config MACH_FORTUNAVE3G_EUR
 	depends on SEC_FORTUNA_PROJECT
 		default n
