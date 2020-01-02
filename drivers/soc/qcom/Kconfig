@@ -586,6 +586,10 @@ config AUTOSMP
 	  Automatically hotplugs the multiple cpu cores on and off
 	  based on cpu load and suspend state
 
+config STATE_NOTIFIER
+        bool "State Notifier"
+	default y
+
 config MSM_LIMITER
 	bool "MSM Frequency Limiter Driver"
 	default y
