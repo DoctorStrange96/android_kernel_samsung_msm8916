@@ -4,10 +4,10 @@
 [ ! -d out ] && mkdir out;
 
 case $1 in
-	"clean")
+	"clean" | "c")
 		make clean O="out";
 		exit;;
-	"mrproper")
+	"mrproper" | "cleanall" | "m")
 		make mrproper O="out";
 		exit;;
 	"*")
@@ -20,7 +20,7 @@ export SUBARCH="arm";
 export CROSS_COMPILE="arm-linux-gnueabihf-";
 export VARIANT_DEFCONFIG="msm8916_sec_fortuna3g_ltn_dtv_defconfig";	
 export SELINUX_DEFCONFIG="selinux_defconfig";
-export VERSION="lineage-16.0";
+export VERSION="lineage-16.0-oc";
 export DEVICE="fortuna3gdtv";
 export MAIN_DIR="$HOME/GrandPrime_G530BT_Kernel";
 export OUT_DIR="$MAIN_DIR/products";
