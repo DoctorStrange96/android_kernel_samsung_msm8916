@@ -20,7 +20,8 @@ export SUBARCH="arm";
 export CROSS_COMPILE="arm-linux-gnueabihf-";
 export VARIANT_DEFCONFIG="msm8916_sec_fortuna3g_ltn_dtv_defconfig";	
 export SELINUX_DEFCONFIG="selinux_defconfig";
-export VERSION="lineage-17.1";
+export VERSION="lineage-17.1-oc";
+>>>>>>> 43dd33f0d5f... Build script: Update for overclocked version
 export DEVICE="fortuna3gdtv";
 export MAIN_DIR="$HOME/GrandPrime_G530BT_Kernel";
 export OUT_DIR="$MAIN_DIR/products";
