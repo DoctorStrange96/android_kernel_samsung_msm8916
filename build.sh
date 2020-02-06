@@ -4,10 +4,10 @@
 [ ! -d out ] && mkdir out;
 
 case $1 in
-	"clean")
+	"clean" | "c")
 		make clean O="out";
 		exit;;
-	"mrproper")
+	"mrproper" | "m" | "cleanall")
 		make mrproper O="out";
 		exit;;
 	"*")
