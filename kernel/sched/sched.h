@@ -1404,7 +1404,6 @@ if (rq->nr_running >= 2) {
 #endif
 
 #ifdef CONFIG_NO_HZ_FULL
-<<<<<<< HEAD
 
 	if (tick_nohz_full_cpu(rq->cpu)) {
 			/* Order rq->nr_running write against the IPI */
@@ -1416,17 +1415,7 @@ if (rq->nr_running >= 2) {
 
 #ifdef CONFIG_INTELLI_PLUG
 	write_seqcount_end(&nr_stats->ave_seqcnt);
-=======
-	
-		if (tick_nohz_full_cpu(rq->cpu)) {
-			/* Order rq->nr_running write against the IPI */
-			smp_wmb();
-			smp_send_reschedule(rq->cpu);
-		}
-      
->>>>>>> f8caa20e9f9... Implemented Fast-IDLING of CPU
 #endif
-	}
 }
 
 static inline void dec_nr_running(struct rq *rq)
