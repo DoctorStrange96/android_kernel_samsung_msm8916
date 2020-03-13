@@ -14,7 +14,7 @@ case $1 in
 		;;
 esac;
 
-export PATH="$HOME/Toolchains/Linaro-5.5/bin:$PATH";
+export PATH="$HOME/Toolchains/Linaro-7.5/bin:$PATH";
 export ARCH="arm";
 export SUBARCH="arm";
 export CROSS_COMPILE="arm-linux-gnueabihf-";
