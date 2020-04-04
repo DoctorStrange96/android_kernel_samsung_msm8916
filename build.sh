@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 #-----------------------------------------------------------------
 # Note: This script is specific for building Valerio's ZXKernel. 
@@ -32,23 +32,26 @@ VariantPrompt="Choose the variant to build this kernel for.
 while read -p "$VariantPrompt" variant; do
 	case $variant in
 		"1")
-			echo -e "Selected variant: SM-G530H XXU / fortuna3g";
+			echo -e "Selected variant: SM-G530H XXU / fortuna3g\n";
 			SELECTED_DEVICE="fortuna3g";
 			SELECTED_DEFCONFIG="msm8916_sec_fortuna3g_eur_defconfig";
 			break;;
 		"2")
-			echo -e "Selected variant: SM-G530H XCU / fortunave3g";
+			echo -e "Selected variant: SM-G530H XCU / fortunave3g\n";
 			SELECTED_DEVICE="fortunave3g";
 			SELECTED_DEFCONFIG="msm8916_sec_fortunave3g_eur_defconfig";
 			break;;
 		"3")
-			echo -e "Selected variant: SM-G530BT / fortuna3gdtv";
+			echo -e "Selected variant: SM-G530BT / fortuna3gdtv\n";
 			SELECTED_DEVICE="fortuna3gdtv";
 			SELECTED_DEFCONFIG="msm8916_sec_fortuna3g_ltn_dtv_defconfig";
-			break;;	
+			break;;
+		"*")
+			echo -e "Invalid option. Please try again.\n";;
+	esac;
+done;
 
-
-export VARIANT_DEFCONFIG=$SELECTED_DEFCONFIG;	
+export VARIANT_DEFCONFIG="$SELECTED_DEFCONFIG";	
 export SELINUX_DEFCONFIG="selinux_defconfig";
 export VERSION="zxkernel";
 export DEVICE="$SELECTED_DEVICE";
