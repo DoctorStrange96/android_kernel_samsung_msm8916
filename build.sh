@@ -68,6 +68,7 @@ export BUILD_FINISH_TIME=`date +"%Y%m%d-%H%M%S"`;
 
 ./dtbtool -o $MAIN_DIR/$VERSION/$DEVICE/dt.img -s 2048 -p out/scripts/dtc/ out/arch/arm/boot/dts/;
 cp out/arch/$ARCH/boot/zImage $MAIN_DIR/$VERSION/$DEVICE;
+find . -type f -iname "*.ko" -exec cp {} $MAIN_DIR/$VERSION/$DEVICE/modules/system/lib/modules \;;
 
 # Flashable zip
 echo -e "Creating flashable zip...\n";
