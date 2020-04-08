@@ -219,6 +219,83 @@
 			};
 		};
 
+		spi0_cs0_active {
+			/* CS */
+			qcom,pins = <&gp 10>;
+			qcom,num-grp-pins = <1>;
+			qcom,pin-func = <1>;
+			label = "spi0-cs0-active";
+			spi0_cs0_active: cs0_active {
+				drive-strength = <2>;
+				bias-disable = <0>;
+			};
+		};
+
+
+		spi0_cs0_suspend {
+			/* CS */
+			qcom,pins = <&gp 10>;
+			qcom,num-grp-pins = <1>;
+			qcom,pin-func = <0>;
+			label = "spi0-cs0-suspend";
+			spi0_cs0_sleep: cs0_sleep {
+				drive-strength = <2>;
+				bias-pull-down; /* pull down */
+			};
+		};		
+
+		isdbt_gpio {
+			qcom,pins = <&gp 21>, <&gp 49>;
+			qcom,num-grp-pins = <2>;
+			qcom,pin-func = <0>;
+		    label = "isdbt_gpio";
+
+			isdbt_gpio_act: isdbt_gpio_act {
+				drive-strength = <2>; /* 2 MA */
+				bias-pull-down; /* PULL DOWN */
+				output-low;
+			};
+			isdbt_gpio_sus: isdbt_gpio_sus {
+				drive-strength = <2>; /* 2 MA */
+				bias-pull-down; /* PULL DOWN */
+				output-low;
+			};
+		};
+
+		isdbt_rst_gpio {
+			qcom,pins = <&gp 0>;
+			qcom,num-grp-pins = <1>;
+			qcom,pin-func = <0>;
+		    label = "isdbt_rst_gpio";
+
+			isdbt_rst_gpio_act: isdbt_rst_gpio_act {
+				drive-strength = <2>; /* 2 MA */
+				bias-pull-up; /* PULL UP */
+				output-high;
+			};
+			isdbt_rst_gpio_sus: isdbt_rst_gpio_sus {
+				drive-strength = <2>; /* 2 MA */
+				bias-pull-up; /* PULL UP */
+				output-high;
+			};
+		};
+
+		isdbt_int_gpio {
+			qcom,pins = <&gp 1>;
+			qcom,num-grp-pins = <1>;
+			qcom,pin-func = <0>;
+		    label = "isdbt_int_gpio";
+
+			isdbt_int_gpio_act: isdbt_int_gpio_act {
+				drive-strength = <2>; /* 2 MA */
+				bias-pull-down; /* PULL DOWN */
+			};
+			isdbt_int_gpio_sus: isdbt_int_gpio_sus {
+				drive-strength = <2>; /* 2 MA */
+				bias-pull-down; /* PULL DOWN */
+			};
+		};		
+
 		pmx_i2c_0 {
 			/* CLK, DATA */
 			qcom,pins = <&gp 7>, <&gp 6>;
