@@ -200,6 +200,9 @@ source "drivers/media/tuners/Kconfig"
 source "drivers/media/dvb-frontends/Kconfig"
 source "drivers/media/isdbt/Kconfig"
 
+# Samsung DTV drivers from G530BT
+source "drivers/media/mtv/Kconfig"
+
 # TDMB drivers
 source "drivers/media/tdmb/Kconfig"
 
