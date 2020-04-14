@@ -84,7 +84,6 @@ obj-$(CONFIG_MSM_PACMAN)        += msm_pacman.o
 obj-y		+= samsung/
 
 obj-$(CONFIG_AUTOSMP)		+= autosmp.o
-obj-$(CONFIG_MSM_HOTPLUG) 		+= msm_hotplug.o
 obj-$(CONFIG_STATE_NOTIFIER)	+= state_notifier.o
 obj-$(CONFIG_MSM_LIMITER) 		+= msm_limiter.o
 
