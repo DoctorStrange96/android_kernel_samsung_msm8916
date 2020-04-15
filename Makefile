@@ -373,8 +373,10 @@ KBUILD_CPPFLAGS := -D__KERNEL__
 KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration -Wno-switch-unreachable -Wno-logical-not-parentheses \
-		   -Wno-format-security -Wno-unused -Wno-maybe-uninitialized -Wno-bool-compare -Wno-int-to-pointer-cast -Wno-duplicate-decl-specifier \
-		   -Wno-misleading-indentation -Wno-incompatible-pointer-types -Wno-discarded-array-qualifiers -fno-delete-null-pointer-checks \
+		   -Wno-format-security -Wno-unused -Wno-maybe-uninitialized \
+		   -Wno-bool-compare -Wno-int-to-pointer-cast -Wno-duplicate-decl-specifier \
+		   -Wno-misleading-indentation -Wno-incompatible-pointer-types \
+		   -Wno-discarded-array-qualifiers -fno-delete-null-pointer-checks \
 		   -std=gnu89
 
 KBUILD_AFLAGS_KERNEL :=
