@@ -40,50 +40,43 @@ EOM
 
 # Initial set-up
 
+InitialGreeting;
 case $1 in
-	"clean" | "c")
-		InitialGreeting;
-		InitialSetup;
-		echo -e "Cleaning most generated files..."
-		make clean O="out" > /dev/null;
-		echo -e "Done!"
-		exit 0;;
-	"h" | "help" | "" | " ")
-		InitialGreeting;
+	"help" | "h" | " " | "")
 		echo -e "This build script accepts the following parameters:";
 		ShowHelp;
 		echo -e "Running this script with no arguments will also trigger this help message.";
 		exit 0;;
-	"mrproper" | "m" | "cleanall")
-		InitialGreeting;
-		InitialSetup;
-		echo -e "Cleaning all generated files..."
-		make mrproper O="out" > /dev/null;
-		echo -e "Done!"
-		exit 0;;
-	"1" | "fortuna3g")
-		InitialGreeting;
-		InitialSetup;
-		echo -e "Selected variant: SM-G530H XXU / fortuna3g\n";
-		SELECTED_DEVICE="fortuna3g";
-		SELECTED_DEFCONFIG="msm8916_sec_fortuna3g_eur_defconfig";;
-	"2" | "fortuna3gdtv")
-		InitialGreeting;
-		InitialSetup;
-		echo -e "Selected variant: SM-G530BT / fortuna3gdtv\n";
-		SELECTED_DEVICE="fortuna3gdtv";
-		SELECTED_DEFCONFIG="msm8916_sec_fortuna3g_ltn_dtv_defconfig";;
-	"3" | "fortunave3g")
-		InitialGreeting;
-		InitialSetup;
-		echo -e "Selected variant: SM-G530H XCU / fortunave3g\n";
-		SELECTED_DEVICE="fortunave3g";
-		SELECTED_DEFCONFIG="msm8916_sec_fortunave3g_eur_defconfig";;
 	*)
-		InitialGreeting;
-		echo -e "You have entered an invalid option.\nYou can use the following options:";
-		ShowHelp;
-		exit 1;;
+		InitialSetup;
+		case $1 in
+			"clean" | "c")
+				echo -e "Cleaning most generated files..."
+				make clean O="out" > /dev/null;
+				echo -e "Done!"
+				exit 0;;
+			"mrproper" | "m" | "cleanall")
+				echo -e "Cleaning all generated files..."
+				make mrproper O="out" > /dev/null;
+				echo -e "Done!"
+				exit 0;;
+			"1" | "fortuna3g")
+				echo -e "Selected variant: SM-G530H XXU / fortuna3g\n";
+				SELECTED_DEVICE="fortuna3g";
+				SELECTED_DEFCONFIG="msm8916_sec_fortuna3g_eur_defconfig";;
+			"2" | "fortuna3gdtv")
+				echo -e "Selected variant: SM-G530BT / fortuna3gdtv\n";
+				SELECTED_DEVICE="fortuna3gdtv";
+				SELECTED_DEFCONFIG="msm8916_sec_fortuna3g_ltn_dtv_defconfig";;
+			"3" | "fortunave3g")
+				echo -e "Selected variant: SM-G530H XCU / fortunave3g\n";
+				SELECTED_DEVICE="fortunave3g";
+				SELECTED_DEFCONFIG="msm8916_sec_fortunave3g_eur_defconfig";;
+			*)
+				echo -e "You have entered an invalid option.\nYou can use the following options:";
+				ShowHelp;
+				exit 1;;
+		esac;
 esac;
 
 export VARIANT_DEFCONFIG="$SELECTED_DEFCONFIG";	
