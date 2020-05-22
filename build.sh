@@ -26,9 +26,12 @@ function InitialSetup {
 
 function ShowHelp {
 	HelpString=`cat << EOM
-	1, fortuna3g - build for Galaxy Grand Prime/Prime Duos (Standard) (SM-G530H XXU / fortuna3g)
-	2, fortuna3gdtv - Galaxy Gran(d) Prime Duos (Brazil) (SM-G530BT / fortuna3gdtv)
-	3, fortunave3g - Galaxy Grand Prime/Prime Duos (VE) (SM-G530H XCU / fortunave3g)
+	1-5 - variant to build this kernel for
+		1, fortuna3g - Galaxy Grand Prime (3G) (SM-G530H XXU / fortuna3g)
+		2, fortuna3gdtv - Galaxy "Gran" Prime Duos (Brazil, 3G DTV) (SM-G530BT / fortuna3gdtv)
+		3, fortunave3g - Galaxy Grand Prime (3G VE) (SM-G530H XCU / fortunave3g)
+		4, fortunafz - Galaxy Grand Prime LTE (Europe) (SM-G530FZ / fortunafz)
+		5, fortunalteub - Galaxy Grand Prime LTE (Latin America) (SM-G530M / fortunalteub)
 	c, clean - remove most generated files
 	h, help - show this help message
 	m, mrproper, cleanall - remove all generated files 
@@ -72,6 +75,14 @@ case $1 in
 				echo -e "Selected variant: SM-G530H XCU / fortunave3g\n";
 				SELECTED_DEVICE="fortunave3g";
 				SELECTED_DEFCONFIG="msm8916_sec_fortunave3g_eur_defconfig";;
+			"4" | "fortunafz")
+				echo -e "Selected variant: SM-G530FZ / fortunafz\n";
+				SELECTED_DEVICE="fortunafz";
+				SELECTED_DEFCONFIG="msm8916_sec_fortuna_eur_defconfig";;
+			"5" | "fortunalteub")
+				echo -e "Selected variant: SM-G530M / fortunalteub\n";
+				SELECTED_DEVICE="fortunalteub";
+				SELECTED_DEFCONFIG="msm8916_sec_fortuna_sea_defconfig";;				
 			*)
 				echo -e "You have entered an invalid option.\nYou can use the following options:";
 				ShowHelp;
