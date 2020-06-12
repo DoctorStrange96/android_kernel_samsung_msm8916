@@ -3,7 +3,6 @@
 ##########################################
 
 ccflags-$(CONFIG_MTV)  += -Idrivers/media/mtv
-ccflags-y += -v
 
 obj-$(CONFIG_MTV) := isdbt.o
 #obj-$(CONFIG_MTV) := isdbt.o isdbt_data.o
