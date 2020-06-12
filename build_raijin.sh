@@ -147,9 +147,14 @@ export OUT_DIR="$KERNEL_DIR/raijin/final_builds";
 [ ! -d $OUT_DIR/$DEVICE ] && mkdir -p $OUT_DIR/$DEVICE;
 
 # Actual build
-# Always clean everything first!
-echo -e "Cleaning all previously generated files..."
-make mrproper O="out" > /dev/null;
+# Always clean everything first! (Can be overridden with "nc" though)
+case $2 in
+	"nc" | "noclean" | "n")
+		;;
+	*)
+		echo -e "Cleaning all previously generated files..."
+		make mrproper O="out" > /dev/null;;
+esac;
 echo -e "Building...\n";
 echo -e "Starting at `date`.";
 make raijin_msm8916_defconfig O="out";
@@ -163,9 +168,11 @@ if [ -f out/arch/arm/boot/zImage ]; then
 	./dtbtool -o $DEVICE_DIR/dt.img -s 2048 -p out/scripts/dtc/ out/arch/arm/boot/dts/;
 	echo -e "Copying kernel image...";
 	cp out/arch/$ARCH/boot/zImage $DEVICE_DIR;
+	mkdir -p $DEVICE_DIR/modules/system/lib/modules;
 	echo -e "Copying kernel modules...";
-	find . -type f -iname "*.ko" -exec cp {} $DEVICE_DIR/modules/system/lib/modules \;;
-	echo -e "Built for: $SELECTED_DEVICE\n$Build date and time: `date +"%Y-%m-%d %H:%M:%S GMT%Z"`" > $DEVICE_DIR/info.txt;
+	rm -rf $DEVICE_DIR/modules/system/lib/modules/*;
+	find . -type f -iname "*.ko" -exec cp -f {} $DEVICE_DIR/modules/system/lib/modules \;;
+	echo -e "Built for: $SELECTED_DEVICE\nBuild date and time: `date +"%Y-%m-%d %H:%M:%S GMT%Z"`" > $DEVICE_DIR/info.txt;
 else
 	echo -e "zImage was not found. That means this build failed. Please check your sources for any errors and try again.";
 	exit 1;
@@ -173,7 +180,7 @@ fi;
 
 # Flashable zip
 echo -e "Creating flashable zip...\n";
-cd $KERNEL_DIR/raijin/ak3-common;
+cd $KERNEL_DIR/raijin/ak3_common;
 zip -r9 $OUT_DIR/$VERSION/$DEVICE/$KERNEL_NAME-$KERNEL_VERSION-$DEVICE-$BUILD_FINISH_TIME.zip . > /dev/null;
 cd $DEVICE_DIR;
 zip -r9 $OUT_DIR/$VERSION/$DEVICE/$KERNEL_NAME-$KERNEL_VERSION-$DEVICE-$BUILD_FINISH_TIME.zip . > /dev/null;
