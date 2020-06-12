@@ -147,6 +147,9 @@ export OUT_DIR="$KERNEL_DIR/raijin/final_builds";
 [ ! -d $OUT_DIR/$DEVICE ] && mkdir -p $OUT_DIR/$DEVICE;
 
 # Actual build
+# Always clean everything first!
+echo -e "Cleaning all previously generated files..."
+make mrproper O="out" > /dev/null;
 echo -e "Building...\n";
 echo -e "Starting at `date`.";
 make raijin_msm8916_defconfig O="out";
