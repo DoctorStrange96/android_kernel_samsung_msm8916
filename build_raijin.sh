@@ -158,7 +158,7 @@ esac;
 echo -e "Building...\n";
 echo -e "Starting at `date`.";
 make raijin_msm8916_defconfig O="out";
-make -j`expr $(($(nproc --all) * 2))` O="out";
+make -j`expr $((($(nproc --all) * 2) + 1))` O="out";
 # Build finish date/time
 export BUILD_FINISH_TIME=`date +"%Y%m%d-%H%M%S"`;
 
@@ -172,7 +172,9 @@ if [ -f out/arch/arm/boot/zImage ]; then
 	echo -e "Copying kernel modules...";
 	rm -rf $DEVICE_DIR/modules/system/lib/modules/*;
 	find . -type f -iname "*.ko" -exec cp -f {} $DEVICE_DIR/modules/system/lib/modules \;;
-	echo -e "Built for: $SELECTED_DEVICE\nBuild date and time: `date +"%Y-%m-%d %H:%M:%S GMT%Z"`" > $DEVICE_DIR/info.txt;
+	echo -e "$SELECTED_DEVICE" > $DEVICE_DIR/device.txt
+	echo -e "`date +"%Y-%m-%d %H:%M:%S GMT%Z"`" > $DEVICE_DIR/date.txt;
+	echo -e "$KERNEL_VERSION" > $DEVICE_DIR/version.txt;
 else
 	echo -e "zImage was not found. That means this build failed. Please check your sources for any errors and try again.";
 	exit 1;
