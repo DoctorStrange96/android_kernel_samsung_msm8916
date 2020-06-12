@@ -175,4 +175,4 @@ zip -r9 $OUT_DIR/$VERSION/$DEVICE/$KERNEL_NAME-$KERNEL_VERSION-$DEVICE-$BUILD_FI
 cd $DEVICE_DIR;
 zip -r9 $OUT_DIR/$VERSION/$DEVICE/$KERNEL_NAME-$KERNEL_VERSION-$DEVICE-$BUILD_FINISH_TIME.zip . > /dev/null;
 echo -e "Done!";
-echo -e "Build finished at `date`."; 
+echo -e "Build finished at `date`. You'll find your flashable zip at raijin/final_builds/$SELECTED_DEVICE."; 
