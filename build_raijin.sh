@@ -145,6 +145,7 @@ export DEVICE="$SELECTED_DEVICE";
 export DEVICE_DIR="$KERNEL_DIR/raijin/device_specific/$SELECTED_DEVICE";
 export OUT_DIR="$KERNEL_DIR/raijin/final_builds";
 [ ! -d $OUT_DIR/$DEVICE ] && mkdir -p $OUT_DIR/$DEVICE;
+[ ! -d $DEVICE_DIR/modules/system/lib/modules ] && mkdir -p $DEVICE_DIR/modules/system/lib/modules;
 
 # Actual build
 # Always clean everything first! (Can be overridden with "nc" though)
@@ -164,16 +165,15 @@ export BUILD_FINISH_TIME=`date +"%Y%m%d-%H%M%S"`;
 
 # Check if the build succeded by checking if zImage exists, otherwise abort
 if [ -f out/arch/arm/boot/zImage ]; then
-	echo -e "Creating device tree blob (DTB) image...";
-	./dtbtool -o $DEVICE_DIR/dt.img -s 2048 -p out/scripts/dtc/ out/arch/arm/boot/dts/;
 	echo -e "Copying kernel image...";
 	cp out/arch/$ARCH/boot/zImage $DEVICE_DIR;
-	mkdir -p $DEVICE_DIR/modules/system/lib/modules;
 	echo -e "Copying kernel modules...";
 	rm -rf $DEVICE_DIR/modules/system/lib/modules/*;
 	find . -type f -iname "*.ko" -exec cp -f {} $DEVICE_DIR/modules/system/lib/modules \;;
+	echo -e "Creating device tree blob (DTB) image...";
+	./dtbtool -o $DEVICE_DIR/dt.img -s 2048 -p out/scripts/dtc/ out/arch/arm/boot/dts/ > /dev/null 2>&1;	
 	echo -e "$SELECTED_DEVICE" > $DEVICE_DIR/device.txt
-	echo -e "`date +"%Y-%m-%d %H:%M:%S GMT%Z"`" > $DEVICE_DIR/date.txt;
+	echo -e "`date +"%Y-%m-%d %H:%M:%S GMT%z"`" > $DEVICE_DIR/date.txt;
 	echo -e "$KERNEL_VERSION" > $DEVICE_DIR/version.txt;
 else
 	echo -e "zImage was not found. That means this build failed. Please check your sources for any errors and try again.";
@@ -181,10 +181,16 @@ else
 fi;
 
 # Flashable zip
-echo -e "Creating flashable zip...\n";
+echo -e "Creating flashable zip...";
 cd $KERNEL_DIR/raijin/ak3_common;
 zip -r9 $OUT_DIR/$VERSION/$DEVICE/$KERNEL_NAME-$KERNEL_VERSION-$DEVICE-$BUILD_FINISH_TIME.zip . > /dev/null;
 cd $DEVICE_DIR;
 zip -r9 $OUT_DIR/$VERSION/$DEVICE/$KERNEL_NAME-$KERNEL_VERSION-$DEVICE-$BUILD_FINISH_TIME.zip . > /dev/null;
+echo -e "Cleaning up...\n";
+rm -f $DEVICE_DIR/zImage;
+rm -f $DEVICE_DIR/dt.img;
+rm -f $DEVICE_DIR/*.txt;
+rm -rf $DEVICE_DIR/modules/system/lib/modules/*;
 echo -e "Done!";
-echo -e "Build finished at `date`. You'll find your flashable zip at raijin/final_builds/$SELECTED_DEVICE."; 
+echo -e "Build finished on `date +"%Y-%M-%d"` at `date +"%R GMT%z"`. 
+You'll find your flashable zip at raijin/final_builds/$SELECTED_DEVICE."; 
