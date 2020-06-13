@@ -98,3 +98,11 @@ x509.genkey
 firmware/synaptics/startup_fw_update-fhd.img
 firmware/synaptics/startup_fw_update.img
 kernel/x509_certificate_list
+
+# Compiled source
+*.ko
+*.img
+*.zip
+
+# Output directory
+out/
