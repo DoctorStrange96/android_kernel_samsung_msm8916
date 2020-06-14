@@ -64,7 +64,7 @@ function CleanSources {
 
 function CreateFlashableZip {
 	echo -e "Creating flashable zip...";
-	cd $KernelFolder/raijin/ak3-common;
+	cd $KernelFolder/raijin/ak3_common;
 	zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDate.zip . > /dev/null;
 	cd $DeviceFolder;
 	zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDate.zip . > /dev/null;
@@ -77,10 +77,9 @@ function CreateFlashableZip {
 
 function InitialSetup {
 	echo -e "Setting up cross-compiler..."
-	export PATH="$HOME/Toolchains/Linaro-7.5-arm-linux-gnueabihf/bin:$PATH";
 	export ARCH="arm";
 	export SUBARCH="arm";
-	export CROSS_COMPILE="arm-linux-gnueabihf-";
+	export CROSS_COMPILE=~/Toolchains/Linaro-7.5-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-;
 	echo -e "Creating make's \"out\" directory if needed..."
 	if [ ! -d out ]; then
 		mkdir out && echo "Make \"out\" directory successfully created\n.";
@@ -122,7 +121,7 @@ function SingleDeviceBuild {
 
 	# Some basic set-up
 	SelectedDevice="$1";
-	export BuildDate=`date +"%Y%M%d"`;
+	export BuildDate=`date +"%Y%m%d-%H%M%S"`;
 	export VARIANT_DEFCONFIG="raijin_msm8916_"$SelectedDevice"_defconfig";
 	export LOCALVERSION=-Raijin-$KernelVersion-$BuildDate;
 	export DeviceFolder=$KernelFolder/raijin/device_specific/$SelectedDevice;
@@ -133,7 +132,7 @@ function SingleDeviceBuild {
 
 	# This is where the actual build starts
 	echo -e "Building...\n";
-	echo -e "Starting at `date +"%Y-%m-%d %H:%M:%S GMT%z"`.";
+	echo -e "Build started on `date +"%Y-%m-%d"` at `date +"%R GMT%z"`.";
 	make raijin_msm8916_defconfig O="out";
 	make -j$JobCount O="out";
 
@@ -143,7 +142,7 @@ function SingleDeviceBuild {
 	# Check if the build succeeded by checking if zImage exists; else abort
 	if [ -f out/arch/arm/boot/zImage ]; then
 		# Tell the building part is finished
-		echo -e "Build finished on `date +"%Y-%M-%d"` at `date +"%R GMT%z"`.";
+		echo -e "Build finished on `date +"%Y-%m-%d"` at `date +"%R GMT%z"`.";
 		# Copy zImage
 		echo -e "Copying kernel image...";
 		cp out/arch/$ARCH/boot/zImage $DeviceFolder;
@@ -155,11 +154,18 @@ function SingleDeviceBuild {
 		echo -e "Creating device tree blob (DTB) image...";
 		./dtbtool -o $DeviceFolder/dt.img -s 2048 -p out/scripts/dtc/ out/arch/arm/boot/dts/ > /dev/null 2>&1;
 		# Write some info to be read by raijin.sh before flashing
-		echo -e "$SelectedDevice" > $DeviceDir/device.txt
-		echo -e "$BuildFinishTime" > $DeviceDir/date.txt;
-		echo -e "$KernelVersion" > $DeviceDir/version.txt;
+		echo -e "$SelectedDevice" > $DeviceFolder/device.txt;
+		echo -e "$BuildFinishTime" > $DeviceFolder/date.txt;
+		echo -e "$KernelVersion" > $DeviceFolder/version.txt;
 		# Create our zip file
 		CreateFlashableZip;
+		# Finish
+		echo -e "Done!";
+		BuildSuccessful=true;
+		if [ ! "$BuildForAll" ]; then
+			echo -e "The whole process was finished on `date +"%Y-%m-%d"` at `date +"%R GMT%z"`.
+You'll find your flashable zip at raijin/final_builds/$SelectedDevice.";
+		fi;
 	else
 		echo -e "zImage was not found. That means this build failed. Please check your sources for any errors and try again.";
 		exit 1;
@@ -205,11 +211,17 @@ for info on how to use the build script.";
 				echo -e "Selected variant: SM-G530F / fortunaltedx";
 				SingleDeviceBuild fortunaltedx;;
 			"a" | "all" | "ba" | "buildall")
+				BuildForAll=true;
 				echo -e "Building for all devices.\nI recommend you go eat/drink something. This might take a ${bold}LONG ${normal}time.";
 				declare -a SupportedDevicesList=("fortuna3g" "fortuna3gdtv" "fortunafz" "fortunaltedx" "fortunalteub" "fortunave3g");
 				for device in ${SupportedDevicesList[@]}; do
 					SingleDeviceBuild "$device";
-				done;;
+					clear;
+				done;
+				if [ "$BuildSuccessful" == true ]; then
+					echo -e "The whole process was finished on `date +"%Y-%m-%d"` at `date +"%R GMT%z"`.
+You'll find your flashable zips at the respective raijin/final_builds folder for each device.";
+				fi;;
 			*)
 				echo -e "You have entered an invalid option.\nYou can use the following options:";
 				ShowHelp;
