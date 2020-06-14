@@ -6,10 +6,14 @@
 #-----------------------------------------------------------------
 
 # Initial variables
-KERNEL_NAME="RaijinKernel";
-KERNEL_VERSION="Amaterasu";
-KERNEL_DIR=`pwd`;
-SCRIPT_NAME="build_raijin.sh";
+KernelName="RaijinKernel";
+KernelVersion="Amaterasu";
+KernelFolder=`pwd`;
+ScriptName="build_raijin.sh";
+
+# Normal & bold text
+normal=`tput sgr0`;
+bold=`tput bold`;
 
 function RaijinAsciiArt {
 	echo -e "-------------------------------------------------";
@@ -30,7 +34,7 @@ function RaijinAsciiArt {
 	sleep 0.1;
 	echo -e " Raijin Kernel - Created by DoctorStrange96      ";
 	sleep 0.1;
-	echo -e " Version: $KERNEL_VERSION                        ";
+	echo -e " Version: $KernelVersion                        ";
 	sleep 0.1;
 	echo -e " Based on ZXKernel by DarkDroidDev & itexpert120 ";
 	sleep 0.1;
@@ -43,7 +47,33 @@ function RaijinAsciiArt {
 	echo -e " Made with Love and Lightning Power in Brazil!   ";
 	sleep 0.1;
 	echo -e "-------------------------------------------------";
-}
+};
+
+function CleanSources {
+	case $1 in
+		"basic")
+			echo -e "Cleaning most generated files..."
+			make clean O="out" > /dev/null;
+			echo -e "Done!";;
+		"full")
+			echo -e "Cleaning all generated files..."
+			make mrproper O="out" > /dev/null;
+			echo -e "Done!";;
+	esac;
+};
+
+function CreateFlashableZip {
+	echo -e "Creating flashable zip...";
+	cd $KernelFolder/raijin/ak3-common;
+	zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDate.zip . > /dev/null;
+	cd $DeviceFolder;
+	zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDate.zip . > /dev/null;
+	echo -e "Cleaning up...\n";
+	rm -f $DeviceFolder/zImage;
+	rm -f $DeviceFolder/dt.img;
+	rm -f $DeviceFolder/*.txt;
+	rm -f $ModulesFolder/*;
+};
 
 function InitialSetup {
 	echo -e "Setting up cross-compiler..."
@@ -53,15 +83,15 @@ function InitialSetup {
 	export CROSS_COMPILE="arm-linux-gnueabihf-";
 	echo -e "Creating make's \"out\" directory if needed..."
 	if [ ! -d out ]; then
-		mkdir out && echo "Make \"out\" directory successfully created.";
+		mkdir out && echo "Make \"out\" directory successfully created\n.";
 	else
 		echo -e "Make \"out\" directory already exists. Skipping.\n";
 	fi;
-	echo -e "Creating Raijin final build folder if needed...";
-	if [ ! -d raijin ]; then
-		mkdir raijin && echo "Raijin folder successfully created.";
+	echo -e "Creating Raijin final builds folder if needed...";
+	if [ ! -d raijin/final_builds ]; then
+		mkdir -p raijin/final_builds && echo "Raijin final builds folder successfully created\n.";
 	else
-		echo -e "Raijin folder already exists. Skipping.\n";
+		echo -e "Raijin final builds folder already exists. Skipping.\n";
 	fi;
 };
 
@@ -71,20 +101,72 @@ function ShowHelp {
 		1, fortuna3g - Galaxy Grand Prime (3G) (SM-G530H XXU / fortuna3g)
 		2, fortuna3gdtv - Galaxy "Gran" Prime Duos (Brazil, 3G DTV) (SM-G530BT / fortuna3gdtv)
 		3, fortunave3g - Galaxy Grand Prime (3G VE) (SM-G530H XCU / fortunave3g)
-		4, fortunafz - Galaxy Grand Prime LTE (Europe) (SM-G530FZ / fortunafz)
+		4, fortunafz, gprimeltexx - Galaxy Grand Prime LTE (Europe) (SM-G530FZ / fortunafz or gprimeltexx)
 		5, fortunalteub - Galaxy Grand Prime LTE (Latin America) (SM-G530M / fortunalteub)
 		6, fortunaltedx - Galaxy Grand Prime LTE (Middle East / South Asia) (SM-G530F / fortunaltedx)
+	a, all, ba, buildall - build for all devices sequentially
 	c, clean - remove most generated files
 	h, help - show this help message
-	m, mrproper, cleanall - remove all generated files 
-		(if you're building for all variants sequentially, do this before each build)
+	m, mrproper, cleanall - remove all generated files
 EOM
 `;
 	echo -e "$HelpString";
 };
 
-# Initial set-up
+function SingleDeviceBuild {
+	# Always clean everything before building
+	CleanSources full;
 
+	# Optimal job count: (number of CPU threads * 2) + 1
+	JobCount=`expr $((($(nproc --all) * 2) + 1))`;
+
+	# Some basic set-up
+	SelectedDevice="$1";
+	export BuildDate=`date +"%Y%M%d"`;
+	export VARIANT_DEFCONFIG="raijin_msm8916_"$SelectedDevice"_defconfig";
+	export LOCALVERSION=-Raijin-$KernelVersion-$BuildDate;
+	export DeviceFolder=$KernelFolder/raijin/device_specific/$SelectedDevice;
+	export OutFolder=$KernelFolder/raijin/final_builds;
+	export ModulesFolder=$DeviceFolder/modules/system/lib/modules;
+	[ ! -d $OutFolder/$SelectedDevice ] && mkdir -p $OutFolder/$SelectedDevice;
+	[ ! -d $ModulesFolder ] && mkdir -p $ModulesFolder;
+
+	# This is where the actual build starts
+	echo -e "Building...\n";
+	echo -e "Starting at `date +"%Y-%m-%d %H:%M:%S GMT%z"`.";
+	make raijin_msm8916_defconfig O="out";
+	make -j$JobCount O="out";
+
+	# Build finish date/time
+	export BuildFinishTime=`date +"%Y-%m-%d %H:%M:%S GMT%z"`
+
+	# Check if the build succeeded by checking if zImage exists; else abort
+	if [ -f out/arch/arm/boot/zImage ]; then
+		# Tell the building part is finished
+		echo -e "Build finished on `date +"%Y-%M-%d"` at `date +"%R GMT%z"`.";
+		# Copy zImage
+		echo -e "Copying kernel image...";
+		cp out/arch/$ARCH/boot/zImage $DeviceFolder;
+		# Copy all kernel modules. Use `find` so no file gets skipped. Also remove any previously built modules.
+		echo -e "Copying kernel modules...";
+		rm -f $ModulesFolder/*;
+		find . -type f -iname "*.ko" -exec cp -f {} $ModulesFolder \;;
+		# Create our DTB image
+		echo -e "Creating device tree blob (DTB) image...";
+		./dtbtool -o $DeviceFolder/dt.img -s 2048 -p out/scripts/dtc/ out/arch/arm/boot/dts/ > /dev/null 2>&1;
+		# Write some info to be read by raijin.sh before flashing
+		echo -e "$SelectedDevice" > $DeviceDir/device.txt
+		echo -e "$BuildFinishTime" > $DeviceDir/date.txt;
+		echo -e "$KernelVersion" > $DeviceDir/version.txt;
+		# Create our zip file
+		CreateFlashableZip;
+	else
+		echo -e "zImage was not found. That means this build failed. Please check your sources for any errors and try again.";
+		exit 1;
+	fi;
+};
+
+# Start the script here
 RaijinAsciiArt;
 case $1 in
 	"help" | "h")
@@ -92,105 +174,45 @@ case $1 in
 		ShowHelp;
 		exit 0;;
 	"" | " ")
-		echo -e "Error: This script requires at least one argument.\nRun \"./$SCRIPT_NAME help\" or \"./$SCRIPT_NAME h\" 
+		echo -e "${bold}Error:${normal} This script requires at least one argument.\nRun \"./$ScriptName help\" or \"./$ScriptName h\" 
 for info on how to use the build script.";
 		exit 0;;
 	*)
 		InitialSetup;
 		case $1 in
 			"clean" | "c")
-				echo -e "Cleaning most generated files..."
-				make clean O="out" > /dev/null;
-				echo -e "Done!"
+				CleanSources basic;
 				exit 0;;
 			"mrproper" | "m" | "cleanall")
-				echo -e "Cleaning all generated files..."
-				make mrproper O="out" > /dev/null;
-				echo -e "Done!"
+				CleanSources full;
 				exit 0;;
 			"1" | "fortuna3g")
 				echo -e "Selected variant: SM-G530H XXU / fortuna3g\n";
-				SELECTED_DEVICE="fortuna3g";
-				SELECTED_DEFCONFIG="raijin_msm8916_fortuna3g_defconfig";;
+				SingleDeviceBuild fortuna3g;;
 			"2" | "fortuna3gdtv")
 				echo -e "Selected variant: SM-G530BT / fortuna3gdtv\n";
-				SELECTED_DEVICE="fortuna3gdtv";
-				SELECTED_DEFCONFIG="raijin_msm8916_fortuna3gdtv_defconfig";;
+				SingleDeviceBuild fortuna3gdtv;;
 			"3" | "fortunave3g")
 				echo -e "Selected variant: SM-G530H XCU / fortunave3g\n";
-				SELECTED_DEVICE="fortunave3g";
-				SELECTED_DEFCONFIG="raijin_msm8916_fortunave3g_defconfig";;
+				SingleDeviceBuild fortunave3g;;
 			"4" | "fortunafz")
 				echo -e "Selected variant: SM-G530FZ / fortunafz\n";
-				SELECTED_DEVICE="fortunafz";
-				SELECTED_DEFCONFIG="raijin_msm8916_fortunafz_defconfig";;
+				SingleDeviceBuild fortunafz;;
 			"5" | "fortunalteub")
 				echo -e "Selected variant: SM-G530M / fortunalteub\n";
-				SELECTED_DEVICE="fortunalteub";
-				SELECTED_DEFCONFIG="raijin_msm8916_fortunalteub_defconfig";;				
+				SingleDeviceBuild fortunalteub;;	
 			"6" | "fortunaltedx")
 				echo -e "Selected variant: SM-G530F / fortunaltedx";
-				SELECTED_DEVICE="fortunaltedx";
-				SELECTED_DEFCONFIG="raijin_msm8916_fortunaltedx_defconfig";;
+				SingleDeviceBuild fortunaltedx;;
+			"a" | "all" | "ba" | "buildall")
+				echo -e "Building for all devices.\nI recommend you go eat/drink something. This might take a ${bold}LONG ${normal}time.";
+				declare -a SupportedDevicesList=("fortuna3g" "fortuna3gdtv" "fortunafz" "fortunaltedx" "fortunalteub" "fortunave3g");
+				for device in ${SupportedDevicesList[@]}; do
+					SingleDeviceBuild "$device";
+				done;;
 			*)
 				echo -e "You have entered an invalid option.\nYou can use the following options:";
 				ShowHelp;
 				exit 1;;
 		esac;
 esac;
-
-export VARIANT_DEFCONFIG="$SELECTED_DEFCONFIG";	
-export SELINUX_DEFCONFIG="raijin_selinux_defconfig";
-export DEVICE="$SELECTED_DEVICE";
-export DEVICE_DIR="$KERNEL_DIR/raijin/device_specific/$SELECTED_DEVICE";
-export OUT_DIR="$KERNEL_DIR/raijin/final_builds";
-[ ! -d $OUT_DIR/$DEVICE ] && mkdir -p $OUT_DIR/$DEVICE;
-[ ! -d $DEVICE_DIR/modules/system/lib/modules ] && mkdir -p $DEVICE_DIR/modules/system/lib/modules;
-
-# Actual build
-# Always clean everything first! (Can be overridden with "nc" though)
-case $2 in
-	"nc" | "noclean" | "n")
-		;;
-	*)
-		echo -e "Cleaning all previously generated files..."
-		make mrproper O="out" > /dev/null;;
-esac;
-echo -e "Building...\n";
-echo -e "Starting at `date`.";
-make raijin_msm8916_defconfig O="out";
-make -j`expr $((($(nproc --all) * 2) + 1))` O="out";
-# Build finish date/time
-export BUILD_FINISH_TIME=`date +"%Y%m%d-%H%M%S"`;
-
-# Check if the build succeded by checking if zImage exists, otherwise abort
-if [ -f out/arch/arm/boot/zImage ]; then
-	echo -e "Copying kernel image...";
-	cp out/arch/$ARCH/boot/zImage $DEVICE_DIR;
-	echo -e "Copying kernel modules...";
-	rm -rf $DEVICE_DIR/modules/system/lib/modules/*;
-	find . -type f -iname "*.ko" -exec cp -f {} $DEVICE_DIR/modules/system/lib/modules \;;
-	echo -e "Creating device tree blob (DTB) image...";
-	./dtbtool -o $DEVICE_DIR/dt.img -s 2048 -p out/scripts/dtc/ out/arch/arm/boot/dts/ > /dev/null 2>&1;	
-	echo -e "$SELECTED_DEVICE" > $DEVICE_DIR/device.txt
-	echo -e "`date +"%Y-%m-%d %H:%M:%S GMT%z"`" > $DEVICE_DIR/date.txt;
-	echo -e "$KERNEL_VERSION" > $DEVICE_DIR/version.txt;
-else
-	echo -e "zImage was not found. That means this build failed. Please check your sources for any errors and try again.";
-	exit 1;
-fi;
-
-# Flashable zip
-echo -e "Creating flashable zip...";
-cd $KERNEL_DIR/raijin/ak3_common;
-zip -r9 $OUT_DIR/$VERSION/$DEVICE/$KERNEL_NAME-$KERNEL_VERSION-$DEVICE-$BUILD_FINISH_TIME.zip . > /dev/null;
-cd $DEVICE_DIR;
-zip -r9 $OUT_DIR/$VERSION/$DEVICE/$KERNEL_NAME-$KERNEL_VERSION-$DEVICE-$BUILD_FINISH_TIME.zip . > /dev/null;
-echo -e "Cleaning up...\n";
-rm -f $DEVICE_DIR/zImage;
-rm -f $DEVICE_DIR/dt.img;
-rm -f $DEVICE_DIR/*.txt;
-rm -rf $DEVICE_DIR/modules/system/lib/modules/*;
-echo -e "Done!";
-echo -e "Build finished on `date +"%Y-%M-%d"` at `date +"%R GMT%z"`. 
-You'll find your flashable zip at raijin/final_builds/$SELECTED_DEVICE."; 
