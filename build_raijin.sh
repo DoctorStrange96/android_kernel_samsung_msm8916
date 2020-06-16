@@ -69,7 +69,7 @@ function CleanSources {
 
 function CreateFlashableZip {
 	echo -e "Creating flashable zip...";
-	cd $KernelFolder/raijin/ak3_common;
+	cd $KernelFolder/raijin-aether/ak3_common;
 	zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDate.zip . > /dev/null;
 	cd $DeviceFolder;
 	zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDate.zip . > /dev/null;
@@ -92,8 +92,8 @@ function InitialSetup {
 		echo -e "Make \"out\" directory already exists. Skipping.\n";
 	fi;
 	echo -e "Creating Raijin final builds folder if needed...";
-	if [ ! -d raijin/final_builds ]; then
-		mkdir -p raijin/final_builds && echo "Raijin final builds folder successfully created\n.";
+	if [ ! -d raijin-aether/final_builds ]; then
+		mkdir -p raijin-aether/final_builds && echo "Raijin final builds folder successfully created\n.";
 	else
 		echo -e "Raijin final builds folder already exists. Skipping.\n";
 	fi;
@@ -129,8 +129,8 @@ function SingleDeviceBuild {
 	export BuildDate=`date +"%Y%m%d-%H%M%S"`;
 	export VARIANT_DEFCONFIG="raijin_msm8916_"$SelectedDevice"_defconfig";
 	export LOCALVERSION=-Raijin-$KernelVersion-$BuildDate;
-	export DeviceFolder=$KernelFolder/raijin/device_specific/$SelectedDevice;
-	export OutFolder=$KernelFolder/raijin/final_builds;
+	export DeviceFolder=$KernelFolder/raijin-aether/device_specific/$SelectedDevice;
+	export OutFolder=$KernelFolder/raijin-aether/final_builds;
 	export ModulesFolder=$DeviceFolder/modules/system/lib/modules;
 	[ ! -d $OutFolder/$SelectedDevice ] && mkdir -p $OutFolder/$SelectedDevice;
 	[ ! -d $ModulesFolder ] && mkdir -p $ModulesFolder;
@@ -169,7 +169,7 @@ function SingleDeviceBuild {
 		BuildSuccessful=true;
 		if [ ! "$BuildForAll" ]; then
 			echo -e "The whole process was finished on `date +"%Y-%m-%d"` at `date +"%R GMT%z"`.
-You'll find your flashable zip at raijin/final_builds/$SelectedDevice.";
+You'll find your flashable zip at raijin-aether/final_builds/$SelectedDevice.";
 		fi;
 	else
 		echo -e "zImage was not found. That means this build failed. Please check your sources for any errors and try again.";
@@ -224,7 +224,7 @@ for info on how to use the build script.";
 				done;
 				if [ "$BuildSuccessful" == true ]; then
 					echo -e "The whole process was finished on `date +"%Y-%m-%d"` at `date +"%R GMT%z"`.
-You'll find your flashable zips at the respective raijin/final_builds folder for each device.";
+You'll find your flashable zips at the respective raijin-aether/final_builds folder for each device.";
 				fi;;
 			*)
 				echo -e "You have entered an invalid option.\nYou can use the following options:";
