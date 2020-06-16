@@ -15,6 +15,9 @@ ScriptName="build_raijin.sh";
 normal=`tput sgr0`;
 bold=`tput bold`;
 
+# Supported devices list
+declare -a SupportedDevicesList=("fortuna3g" "fortuna3gdtv" "fortunafz" "fortunaltedx" "fortunalteub" "fortunave3g");
+
 function RaijinAsciiArt {
 	echo -e "-------------------------------------------------";
 	sleep 0.1;
@@ -213,9 +216,8 @@ for info on how to use the build script.";
 			"a" | "all" | "ba" | "buildall")
 				BuildForAll=true;
 				echo -e "Building for all devices.\nI recommend you go eat/drink something. This might take a ${bold}LONG ${normal}time.";
-				declare -a SupportedDevicesList=("fortuna3g" "fortuna3gdtv" "fortunafz" "fortunaltedx" "fortunalteub" "fortunave3g");
 				for device in ${SupportedDevicesList[@]}; do
-					SingleDeviceBuild "$device";
+					SingleDeviceBuild $device;
 					clear;
 				done;
 				if [ "$BuildSuccessful" == true ]; then
