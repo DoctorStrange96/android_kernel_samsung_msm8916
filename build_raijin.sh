@@ -245,7 +245,11 @@ for info on how to use the build script.";
 				BuildForAll="true";
 				echo -e "Building for all devices.\nI recommend you go eat/drink something. This might take a ${bold}LONG ${normal}time.";
 				for device in ${SupportedDevicesList[@]}; do
+					export ARCH="arm";
+					export SUBARCH="arm";
+					export CROSS_COMPILE=~/Toolchains/Linaro-7.5-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-;
 					echo -e "Building for: $device";
+					cd $KernelFolder;
 					SingleDeviceBuild $device;
 					clear;
 				done;
