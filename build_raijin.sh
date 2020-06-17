@@ -245,6 +245,7 @@ for info on how to use the build script.";
 				BuildForAll="true";
 				echo -e "Building for all devices.\nI recommend you go eat/drink something. This might take a ${bold}LONG ${normal}time.";
 				for device in ${SupportedDevicesList[@]}; do
+					echo -e "Building for: $device";
 					SingleDeviceBuild $device;
 					clear;
 				done;
