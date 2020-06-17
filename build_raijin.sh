@@ -11,6 +11,9 @@ KernelVersion="Ame-no-Uzume";
 KernelFolder=`pwd`;
 ScriptName="build_raijin.sh";
 
+# Supported devices list
+declare -a SupportedDevicesList=("fortuna3g" "fortuna3gdtv" "fortunafz" "fortunaltedx" "fortunalteub" "fortunave3g");
+
 # Normal & bold text
 normal=`tput sgr0`;
 bold=`tput bold`;
@@ -241,9 +244,8 @@ for info on how to use the build script.";
 			"a" | "all" | "ba" | "buildall")
 				BuildForAll="true";
 				echo -e "Building for all devices.\nI recommend you go eat/drink something. This might take a ${bold}LONG ${normal}time.";
-				declare -a SupportedDevicesList=("fortuna3g" "fortuna3gdtv" "fortunafz" "fortunaltedx" "fortunalteub" "fortunave3g");
 				for device in ${SupportedDevicesList[@]}; do
-					SingleDeviceBuild "$device";
+					SingleDeviceBuild $device;
 					clear;
 				done;
 				if [[ "$BuildSuccessful" = "true" ]]; then
