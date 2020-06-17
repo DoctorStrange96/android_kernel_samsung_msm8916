@@ -7,7 +7,7 @@
 
 # Initial variables
 KernelName="RaijinKernel";
-KernelVersion="Amaterasu";
+KernelVersion="AmeNoUzume";
 KernelFolder=`pwd`;
 ScriptName="build_raijin.sh";
 
