@@ -7,7 +7,7 @@
 
 # Initial variables
 KernelName="RaijinKernel";
-KernelVersion="Amaterasu";
+KernelVersion="Ame-no-Uzume";
 KernelFolder=`pwd`;
 ScriptName="build_raijin.sh";
 
@@ -53,11 +53,19 @@ function CleanSources {
 	case $1 in
 		"basic")
 			echo -e "Cleaning most generated files..."
-			make clean O="out" > /dev/null;
+			if [[ "$VerboseMode" = "true" ]]; then
+				make clean O="out";
+			else
+				make clean O="out" > /dev/null;
+			fi;
 			echo -e "Done!";;
 		"full")
 			echo -e "Cleaning all generated files..."
-			make mrproper O="out" > /dev/null;
+			if [[ "$VerboseMode" = "true" ]]; then
+				make mrproper O="out";
+			else
+				make mrproper O="out" > /dev/null;
+			fi;
 			echo -e "Done!";;
 	esac;
 };
@@ -65,9 +73,17 @@ function CleanSources {
 function CreateFlashableZip {
 	echo -e "Creating flashable zip...";
 	cd $KernelFolder/raijin/ak3_common;
-	zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDate.zip . > /dev/null;
+	if [[ "$VerboseMode" = "true" ]]; then
+		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDate.zip . ;
+	else
+		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDate.zip . > /dev/null;
+	fi;
 	cd $DeviceFolder;
-	zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDate.zip . > /dev/null;
+	if [[ "$VerboseMode" = "true" ]]; then
+		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDate.zip . ;
+	else
+		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDate.zip . > /dev/null;
+	fi;
 	echo -e "Cleaning up...\n";
 	rm -f $DeviceFolder/zImage;
 	rm -f $DeviceFolder/dt.img;
@@ -82,13 +98,13 @@ function InitialSetup {
 	export CROSS_COMPILE=~/Toolchains/Linaro-7.5-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-;
 	echo -e "Creating make's \"out\" directory if needed..."
 	if [ ! -d out ]; then
-		mkdir out && echo "Make \"out\" directory successfully created\n.";
+		mkdir out && echo -e "Make \"out\" directory successfully created.\n";
 	else
 		echo -e "Make \"out\" directory already exists. Skipping.\n";
 	fi;
 	echo -e "Creating Raijin final builds folder if needed...";
 	if [ ! -d raijin/final_builds ]; then
-		mkdir -p raijin/final_builds && echo "Raijin final builds folder successfully created\n.";
+		mkdir -p raijin/final_builds && echo -e "Raijin final builds folder successfully created\n.";
 	else
 		echo -e "Raijin final builds folder already exists. Skipping.\n";
 	fi;
@@ -152,7 +168,11 @@ function SingleDeviceBuild {
 		find . -type f -iname "*.ko" -exec cp -f {} $ModulesFolder \;;
 		# Create our DTB image
 		echo -e "Creating device tree blob (DTB) image...";
-		./dtbtool -o $DeviceFolder/dt.img -s 2048 -p out/scripts/dtc/ out/arch/arm/boot/dts/ > /dev/null 2>&1;
+		if [[ "$VerboseMode" = "true" ]]; then
+			./dtbtool -o $DeviceFolder/dt.img -s 2048 -p out/scripts/dtc/ out/arch/arm/boot/dts/;
+		else
+			./dtbtool -o $DeviceFolder/dt.img -s 2048 -p out/scripts/dtc/ out/arch/arm/boot/dts/ > /dev/null 2>&1;
+		fi;
 		# Write some info to be read by raijin.sh before flashing
 		echo -e "$SelectedDevice" > $DeviceFolder/device.txt;
 		echo -e "$BuildFinishTime" > $DeviceFolder/date.txt;
@@ -161,8 +181,8 @@ function SingleDeviceBuild {
 		CreateFlashableZip;
 		# Finish
 		echo -e "Done!";
-		BuildSuccessful=true;
-		if [ ! "$BuildForAll" ]; then
+		BuildSuccessful="true";
+		if [[ ! "$BuildForAll" = "true" ]]; then
 			echo -e "The whole process was finished on `date +"%Y-%m-%d"` at `date +"%R GMT%z"`.
 You'll find your flashable zip at raijin/final_builds/$SelectedDevice.";
 		fi;
@@ -185,6 +205,11 @@ for info on how to use the build script.";
 		exit 0;;
 	*)
 		InitialSetup;
+		case $2 in
+		"v" | "verbose")
+			VerboseMode="true";
+			echo -e "Verbose mode enabled.";;
+		esac;
 		case $1 in
 			"clean" | "c")
 				CleanSources basic;
@@ -211,14 +236,14 @@ for info on how to use the build script.";
 				echo -e "Selected variant: SM-G530F / fortunaltedx";
 				SingleDeviceBuild fortunaltedx;;
 			"a" | "all" | "ba" | "buildall")
-				BuildForAll=true;
+				BuildForAll="true";
 				echo -e "Building for all devices.\nI recommend you go eat/drink something. This might take a ${bold}LONG ${normal}time.";
 				declare -a SupportedDevicesList=("fortuna3g" "fortuna3gdtv" "fortunafz" "fortunaltedx" "fortunalteub" "fortunave3g");
 				for device in ${SupportedDevicesList[@]}; do
 					SingleDeviceBuild "$device";
 					clear;
 				done;
-				if [ "$BuildSuccessful" == true ]; then
+				if [[ "$BuildSuccessful" = "true" ]]; then
 					echo -e "The whole process was finished on `date +"%Y-%m-%d"` at `date +"%R GMT%z"`.
 You'll find your flashable zips at the respective raijin/final_builds folder for each device.";
 				fi;;
