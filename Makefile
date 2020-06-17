@@ -377,7 +377,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-bool-compare -Wno-int-to-pointer-cast -Wno-duplicate-decl-specifier \
 		   -Wno-misleading-indentation -Wno-incompatible-pointer-types -Wno-nonnull -Wno-bool-operation \
 		   -Wno-discarded-array-qualifiers -fno-delete-null-pointer-checks \
-		   -mtune=cortex-a53 -Wno-array-bounds \
+		   -marm -mtune=cortex-a53 -fmodulo-sched -fmodulo-sched-allow-regmoves -Wno-array-bounds \
 		   -mfloat-abi=softfp -mfpu=vfpv4 \
 		   -std=gnu89
 
