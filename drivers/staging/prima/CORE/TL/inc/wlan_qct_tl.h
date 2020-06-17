@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2016 The Linux Foundation. All rights reserved.
  *
  * Previously licensed under the ISC license by Qualcomm Atheros, Inc.
  *
@@ -721,16 +721,7 @@ typedef VOS_STATUS (*WLANTL_STARxCBType)( v_PVOID_t              pvosGCtx,
                                           vos_pkt_t*             vosDataBuff,
                                           v_U8_t                 ucSTAId,
                                           WLANTL_RxMetaInfoType* pRxMetaInfo);
-/**
- * WLANTL_FwdEapolCBType() - Call back to forward Eapol packet
- * @pvosGCtx : pointer to vos global context
- * @vosDataBuff: pointer to vos packet
- *
- * Return: None
- *
- */
-typedef void (*WLANTL_FwdEapolCBType) (v_PVOID_t pvosGCtx,
-                                             vos_pkt_t* vosDataBuff);
+
 
 /*----------------------------------------------------------------------------
     INTERACTION WITH BAP
@@ -3360,92 +3351,6 @@ WLANTL_SetMcastDuplicateDetection
     v_U8_t        enable
 );
 #endif /* WLAN_FEATURE_RMC */
-
-/*
- * WLANTL_ResetRxSSN - reset last rx ssn
- * @pvosGCtx: global vos context
- * @ucSTAId: station id
- *
- * This function resets the last ssn of all tids of the station
- * for whom BA reorder session exists.
- *
- * Return: none
- */
-void WLANTL_ResetRxSSN(v_PVOID_t pvosGCtx, uint8_t ucSTAId);
-
-/*
- * WLANTL_SetDataPktFilter - Set data filter flag
- * @pvosGCtx: global vos context
- * @ucSTAId: station id
- * @flag: packet data filter flag
- *
- * This function sets the data pkt filter flag of all tids
- * of the station for whom BA reorder session exists.
- *
- * Return: none
- */
-void WLANTL_SetDataPktFilter(v_PVOID_t pvosGCtx, uint8_t ucSTAId, bool flag);
-
-/**
- * WLANTL_SampleTx() - collect tx samples
- * @data: TL context pointer
- *
- * This function records the frames fetched from stations
- * during TX sample interval
- *
- * Return: void
- */
-void WLANTL_SampleTx(void *data);
-
-/*
- * WLANTL_EnablePreAssocCaching - Enable caching during pre-assoc
- * @staid: sta client where frames are cached
- *
- * Return: none
- */
-void WLANTL_EnablePreAssocCaching(void);
-
-/*
- * WLANTL_PreAssocForward - Forward the cached packets
- *
- * This function forwards or flushes the packets after
- * pre assoc success/failure.
- *
- * Return: none
- */
-void WLANTL_PreAssocForward(bool flag);
-
-/* make before break */
-void WLANTL_RegisterFwdEapol(v_PVOID_t pvosGCtx,
-                             WLANTL_FwdEapolCBType pfnFwdEapol);
-
-/**
- * WLANTL_SetARPFWDatapath() - keep or remove FW in data path for ARP
- * @pvosGCtx: global vos context
- * @flag: value to keep or remove FW from data path
- *
- * Return: void
- */
-void WLANTL_SetARPFWDatapath(void * pvosGCtx, bool flag);
-
-/**
- * WLANTL_GetSAPStaRSSi() - get RSSI for the SAP client
- * @pvosGCtx: global vos context
- * @ucSTAId: station id to get rssi for
- * @rssi: pointer to fill station rssi value
- *
- * Return: void
- */
-void WLANTL_GetSAPStaRSSi(void * pvosGCtx, uint8_t ucSTAId, s8 *rssi);
-
-/**
- * wlan_tl_get_sta_rx_rate() - get rx rate for the SAP client
- * @pvosGCtx: global vos context
- * @ucSTAId: station id to get rssi for
- *
- * Return: rx tate
- */
-v_U16_t wlan_tl_get_sta_rx_rate(void* pvosGCtx, uint8_t ucSTAId);
 
 /**
  * WLANTL_SetKeySeqCounter() - set sequence key counter

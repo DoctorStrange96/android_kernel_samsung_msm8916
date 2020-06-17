@@ -380,14 +380,9 @@ static void __schBeaconProcessForSession( tpAniSirGlobal      pMac,
            goto fail;
         }
 
-        if(RF_CHAN_14 >= psessionEntry->currentOperChannel)
+        if( RF_CHAN_14 >= psessionEntry->currentOperChannel )
         {
-            if (psessionEntry->force_24ghz_in_ht20)
-                channelBondingMode =
-                     WNI_CFG_CHANNEL_BONDING_MODE_DISABLE;
-            else
-                channelBondingMode =
-                     pMac->roam.configParam.channelBondingMode24GHz;
+           channelBondingMode = pMac->roam.configParam.channelBondingMode24GHz;
         }
         else
         {
@@ -485,8 +480,7 @@ static void __schBeaconProcessForSession( tpAniSirGlobal      pMac,
     {
         /* Channel Switch information element updated */
         if(pBeacon->channelSwitchPresent ||
-            pBeacon->propIEinfo.propChannelSwitchPresent ||
-            pBeacon->ecsa_present)
+            pBeacon->propIEinfo.propChannelSwitchPresent)
         {
             limUpdateChannelSwitch(pMac, pBeacon, psessionEntry);
         }
@@ -755,10 +749,6 @@ void schBeaconProcess(tpAniSirGlobal pMac, tANI_U8* pRxPacketInfo, tpPESession p
             limParseBeaconForTim(pMac, (tANI_U8 *) pRxPacketInfo, psessionEntry);
 
         return;
-    }
-    if (beaconStruct.ssidPresent)
-    {
-        beaconStruct.ssId.ssId[beaconStruct.ssId.length] = 0;
     }
 
     /*

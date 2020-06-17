@@ -669,7 +669,7 @@ limIndicateProbeReqToHDD(tpAniSirGlobal pMac, tANI_U8 *pBd,
 
     //send the probe req to SME.
     limSendSmeMgmtFrameInd( pMac, psessionEntry->smeSessionId, pBd,
-                            psessionEntry, WDA_GET_RX_RSSI_DB(pBd));
+                            psessionEntry, 0);
 #ifdef WLAN_FEATURE_P2P_INTERNAL
     limSendP2PProbeResponse(pMac, pBd, psessionEntry);
 #endif
