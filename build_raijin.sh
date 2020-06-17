@@ -74,15 +74,15 @@ function CreateFlashableZip {
 	echo -e "Creating flashable zip...";
 	cd $KernelFolder/raijin/ak3_common;
 	if [[ "$VerboseMode" = "true" ]]; then
-		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDate.zip . ;
+		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDateFull.zip . ;
 	else
-		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDate.zip . > /dev/null;
+		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDateFull.zip . > /dev/null;
 	fi;
 	cd $DeviceFolder;
 	if [[ "$VerboseMode" = "true" ]]; then
-		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDate.zip . ;
+		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDateFull.zip . ;
 	else
-		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDate.zip . > /dev/null;
+		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDateFull.zip . > /dev/null;
 	fi;
 	echo -e "Cleaning up...\n";
 	rm -f $DeviceFolder/zImage;
@@ -137,9 +137,11 @@ function SingleDeviceBuild {
 
 	# Some basic set-up
 	SelectedDevice="$1";
-	export BuildDate=`date +"%Y%m%d-%H%M%S"`;
+	export BuildDate=`date +"%Y%m%d"`;
+	export BuildDateFull=`date +"%Y%m%d-%H%M%S"`;
 	export VARIANT_DEFCONFIG="raijin_msm8916_"$SelectedDevice"_defconfig";
-	export LOCALVERSION=-Raijin-$KernelVersion-$BuildDate;
+	export LOCALVERSION="-Raijin-"$KernelVersion"-"$BuildDate;
+	export SELINUX_DEFCONFIG="raijin_selinux_defconfig";
 	export DeviceFolder=$KernelFolder/raijin/device_specific/$SelectedDevice;
 	export OutFolder=$KernelFolder/raijin/final_builds;
 	export ModulesFolder=$DeviceFolder/modules/system/lib/modules;
@@ -149,6 +151,7 @@ function SingleDeviceBuild {
 	# This is where the actual build starts
 	echo -e "Building...\n";
 	echo -e "Build started on `date +"%Y-%m-%d"` at `date +"%R GMT%z"`.";
+	echo -e "Kernel localversion will be: 3.10.108"$LOCALVERSION;
 	make raijin_msm8916_defconfig O="out";
 	make -j$JobCount O="out";
 
