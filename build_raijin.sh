@@ -139,7 +139,7 @@ function SingleDeviceBuild {
 	SelectedDevice="$1";
 	export BuildDate=`date +"%Y%m%d-%H%M%S"`;
 	export VARIANT_DEFCONFIG="raijin_msm8916_"$SelectedDevice"_defconfig";
-	export LOCALVERSION=-Raijin-$KernelVersion-$BuildDate;
+	# export LOCALVERSION="-Raijin-"$KernelVersion"-"$BuildDate;
 	export DeviceFolder=$KernelFolder/raijin/device_specific/$SelectedDevice;
 	export OutFolder=$KernelFolder/raijin/final_builds;
 	export ModulesFolder=$DeviceFolder/modules/system/lib/modules;
