@@ -37,8 +37,10 @@ function RaijinAsciiArt {
 	sleep 0.1;
 	echo -e " Raijin Kernel - Created by DoctorStrange96      ";
 	sleep 0.1;
-	echo -e " Version: $KernelVersion                        ";
+	echo -e " Version: $KernelVersion                         ";
 	sleep 0.1;
+	echo -e " Overclocked Edition                             ";
+	sleep 0.1;	
 	echo -e " Based on ZXKernel by DarkDroidDev & itexpert120 ";
 	sleep 0.1;
 	echo -e " Made for Samsung Galaxy Grand Prime (SM-G530)   ";
@@ -75,17 +77,17 @@ function CleanSources {
 
 function CreateFlashableZip {
 	echo -e "Creating flashable zip...";
-	cd $KernelFolder/raijin/ak3_common;
+	cd $KernelFolder/raijin_oc/ak3_common;
 	if [[ "$VerboseMode" = "true" ]]; then
-		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDateFull.zip . ;
+		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-OC-$SelectedDevice-$BuildDateFull.zip . ;
 	else
 		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDateFull.zip . > /dev/null;
 	fi;
 	cd $DeviceFolder;
 	if [[ "$VerboseMode" = "true" ]]; then
-		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDateFull.zip . ;
+		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-OC-$SelectedDevice-$BuildDateFull.zip . ;
 	else
-		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDateFull.zip . > /dev/null;
+		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-OC-$SelectedDevice-$BuildDateFull.zip . > /dev/null;
 	fi;
 	echo -e "Cleaning up...\n";
 	rm -f $DeviceFolder/zImage;
@@ -106,8 +108,8 @@ function InitialSetup {
 		echo -e "Make \"out\" directory already exists. Skipping.\n";
 	fi;
 	echo -e "Creating Raijin final builds folder if needed...";
-	if [ ! -d raijin/final_builds ]; then
-		mkdir -p raijin/final_builds && echo -e "Raijin final builds folder successfully created\n.";
+	if [ ! -d raijin_oc/final_builds ]; then
+		mkdir -p raijin_oc/final_builds && echo -e "Raijin final builds folder successfully created\n.";
 	else
 		echo -e "Raijin final builds folder already exists. Skipping.\n";
 	fi;
@@ -143,7 +145,7 @@ function SingleDeviceBuild {
 	export BuildDate=`date +"%Y%m%d"`;
 	export BuildDateFull=`date +"%Y%m%d-%H%M%S"`;
 	export VARIANT_DEFCONFIG="raijin_msm8916_"$SelectedDevice"_defconfig";
-	export LOCALVERSION="-Raijin-"$KernelVersion"-"$BuildDate;
+	export LOCALVERSION="-Raijin-"$KernelVersion"-OC-"$BuildDate;
 	export SELINUX_DEFCONFIG="raijin_selinux_defconfig";
 	export DeviceFolder=$KernelFolder/raijin/device_specific/$SelectedDevice;
 	export OutFolder=$KernelFolder/raijin/final_builds;
@@ -190,7 +192,7 @@ function SingleDeviceBuild {
 		BuildSuccessful="true";
 		if [[ ! "$BuildForAll" = "true" ]]; then
 			echo -e "The whole process was finished on `date +"%Y-%m-%d"` at `date +"%R GMT%z"`.
-You'll find your flashable zip at raijin/final_builds/$SelectedDevice.";
+You'll find your flashable zip at raijin_oc/final_builds/$SelectedDevice.";
 		fi;
 	else
 		echo -e "zImage was not found. That means this build failed. Please check your sources for any errors and try again.";
@@ -255,7 +257,7 @@ for info on how to use the build script.";
 				done;
 				if [[ "$BuildSuccessful" = "true" ]]; then
 					echo -e "The whole process was finished on `date +"%Y-%m-%d"` at `date +"%R GMT%z"`.
-You'll find your flashable zips at the respective raijin/final_builds folder for each device.";
+You'll find your flashable zips at the respective raijin_oc/final_builds folder for each device.";
 				fi;;
 			*)
 				echo -e "You have entered an invalid option.\nYou can use the following options:";
