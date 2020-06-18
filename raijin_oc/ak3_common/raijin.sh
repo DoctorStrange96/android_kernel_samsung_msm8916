@@ -18,6 +18,8 @@ ui_print " Raijin Kernel - Created by DoctorStrange96      ";
 sleep 0.1;
 ui_print " Version: `cat version.txt`                      ";
 sleep 0.1;
+ui_print " Overclocked Edition                             ";
+sleep 0.1;
 ui_print " Built for: `cat device.txt`                     ";
 sleep 0.1;
 ui_print " Build date and time: `cat date.txt`             ";
