@@ -427,6 +427,11 @@ fi;
 
 do_modules;
 
+ui_print "Pushing Raijin init.d script...";
+cp -f $AKHOME/patch/00-raijin.sh /system/etc/init.d/;
+chmod 755 /system/etc/init.d/00-raijin.sh;
+chown root:shell /system/etc/init.d/00-raijin.sh;
+
 debugging;
 restore_env;
 
@@ -435,3 +440,4 @@ if [ "$(file_getprop anykernel.sh do.cleanup)" == 1 ]; then
 fi;
 
 ui_print " " " " "Done!";
+
