@@ -147,8 +147,8 @@ function SingleDeviceBuild {
 	export VARIANT_DEFCONFIG="raijin_msm8916_"$SelectedDevice"_defconfig";
 	export LOCALVERSION="-Raijin-"$KernelVersion"-OC-"$BuildDate;
 	export SELINUX_DEFCONFIG="raijin_selinux_defconfig";
-	export DeviceFolder=$KernelFolder/raijin/device_specific/$SelectedDevice;
-	export OutFolder=$KernelFolder/raijin/final_builds;
+	export DeviceFolder=$KernelFolder/raijin_oc/device_specific/$SelectedDevice;
+	export OutFolder=$KernelFolder/raijin_oc/final_builds;
 	export ModulesFolder=$DeviceFolder/modules/system/lib/modules;
 	[ ! -d $OutFolder/$SelectedDevice ] && mkdir -p $OutFolder/$SelectedDevice;
 	[ ! -d $ModulesFolder ] && mkdir -p $ModulesFolder;
