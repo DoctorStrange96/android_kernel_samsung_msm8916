@@ -19,7 +19,7 @@ normal=`tput sgr0`;
 bold=`tput bold`;
 
 function RaijinAsciiArt {
-	echo -e "-------------------------------------------------";
+	echo -e "${bold}-------------------------------------------------";
 	sleep 0.1;
 	echo -e " __________________________________________   __ ";
 	sleep 0.1;
@@ -31,11 +31,11 @@ function RaijinAsciiArt {
 	sleep 0.1;
 	echo -e " /_/ |_| /_/  |_/___/  \____/  /___/  /_/ |_/    ";
 	sleep 0.1;
-	echo -e "                      雷神                        ";
+	echo -e "${normal}                      雷神                        ${bold}";
 	sleep 0.1;
 	echo -e "-------------------------------------------------";
 	sleep 0.1;
-	echo -e " Raijin Kernel - Created by DoctorStrange96      ";
+	echo -e " ${bold}Raijin Kernel - Created by DoctorStrange96 ";
 	sleep 0.1;
 	echo -e " Version: $KernelVersion                         ";
 	sleep 0.1;
@@ -51,7 +51,7 @@ function RaijinAsciiArt {
 	sleep 0.1;
 	echo -e " Made with Love and Lightning Power in Brazil!   ";
 	sleep 0.1;
-	echo -e "-------------------------------------------------";
+	echo -e "------------------------------------------------- ${normal}";
 };
 
 function CleanSources {
@@ -109,7 +109,7 @@ function InitialSetup {
 	fi;
 	echo -e "Creating Raijin final builds folder if needed...";
 	if [ ! -d raijin_oc/final_builds ]; then
-		mkdir -p raijin_oc/final_builds && echo -e "Raijin final builds folder successfully created\n.";
+		mkdir -p raijin_oc/final_builds && echo -e "Raijin final builds folder successfully created.\n";
 	else
 		echo -e "Raijin final builds folder already exists. Skipping.\n";
 	fi;
@@ -117,25 +117,33 @@ function InitialSetup {
 
 function ShowHelp {
 	HelpString=`cat << EOM
-	1-6 - variant to build this kernel for
-		1, fortuna3g - Galaxy Grand Prime (3G) (SM-G530H XXU / fortuna3g)
-		2, fortuna3gdtv - Galaxy "Gran" Prime Duos (Brazil, 3G DTV) (SM-G530BT / fortuna3gdtv)
-		3, fortunave3g - Galaxy Grand Prime (3G VE) (SM-G530H XCU / fortunave3g)
-		4, fortunafz, gprimeltexx - Galaxy Grand Prime LTE (Europe) (SM-G530FZ / fortunafz or gprimeltexx)
-		5, fortunalteub - Galaxy Grand Prime LTE (Latin America) (SM-G530M / fortunalteub)
-		6, fortunaltedx - Galaxy Grand Prime LTE (Middle East / South Asia) (SM-G530F / fortunaltedx)
+${bold}Usage: ${normal}./$ScriptName {1-6|VARIANT|a|c|h|m} {v|nc} {nc}
+
+Supported variants:
+	1, fortuna3g - SM-G530H XXU (Global Grand Prime, 3G only)
+	2, fortuna3gdtv - SM-G530BT (Brazilian "Gran" Prime w/ DTV, 3G only)
+	3, fortunafz, gprimeltexx - SM-G530FZ (European Grand Prime LTE)
+	4, fortunaltedx - SM-G530F (M. East/Africa/APAC Grand Prime LTE)
+	5, fortunalteub - SM-G530M (LATAM Grand Prime LTE)
+	6, fortunave3g - SM-G530H XCU (EMEA Grand Prime VE, 3G only)	
+
+Other options:
 	a, all, ba, buildall - build for all devices sequentially
 	c, clean - remove most generated files
 	h, help - show this help message
 	m, mrproper, cleanall - remove all generated files
+
+Build options (regardless of being individual or batch build):
+	nc, noclean - skip pre-build source clean-up
+	v, verbose - enable verbose mode
 EOM
 `;
 	echo -e "$HelpString";
 };
 
-function SingleDeviceBuild {
-	# Always clean everything before building
-	CleanSources full;
+function BuildKernelAndDtb {
+	# Always clean everything before building unless the "nc" flag was passed
+	[[ ! "$NoClean" = "true" ]] && CleanSources full;
 
 	# Optimal job count: (number of CPU threads * 2) + 1
 	JobCount=`expr $((($(nproc --all) * 2) + 1))`;
@@ -157,8 +165,8 @@ function SingleDeviceBuild {
 	echo -e "Building...\n";
 	echo -e "Build started on `date +"%Y-%m-%d"` at `date +"%R GMT%z"`.";
 	echo -e "Kernel localversion will be: 3.10.108"$LOCALVERSION;
-	make raijin_msm8916_defconfig O="out";
-	make -j$JobCount O="out";
+	make -C $KernelFolder -j$JobCount raijin_msm8916_defconfig O="out";
+	make -C $KernelFolder -j$JobCount O="out";
 
 	# Build finish date/time
 	export BuildFinishTime=`date +"%Y-%m-%d %H:%M:%S GMT%z"`
@@ -204,7 +212,6 @@ You'll find your flashable zip at raijin_oc/final_builds/$SelectedDevice.";
 RaijinAsciiArt;
 case $1 in
 	"help" | "h")
-		echo -e "This build script accepts the following parameters:";
 		ShowHelp;
 		exit 0;;
 	"" | " ")
@@ -217,6 +224,15 @@ for info on how to use the build script.";
 		"v" | "verbose")
 			VerboseMode="true";
 			echo -e "Verbose mode enabled.";;
+
+		"nc" | "noclean")
+			NoClean="true";
+			echo -e "Pre-build source clean-up will be skipped. I hope you're sure what you're doing!";;
+		esac;
+		case $3 in
+		"nc" | "noclean")
+			NoClean="true";
+			echo -e "Pre-build source clean-up will be skipped. I hope you're sure what you're doing!";;
 		esac;
 		case $1 in
 			"clean" | "c")
@@ -226,23 +242,23 @@ for info on how to use the build script.";
 				CleanSources full;
 				exit 0;;
 			"1" | "fortuna3g")
-				echo -e "Selected variant: SM-G530H XXU / fortuna3g\n";
-				SingleDeviceBuild fortuna3g;;
+				echo -e "Selected variant: SM-G530H XXU\n";
+				BuildKernelAndDtb fortuna3g;;
 			"2" | "fortuna3gdtv")
-				echo -e "Selected variant: SM-G530BT / fortuna3gdtv\n";
-				SingleDeviceBuild fortuna3gdtv;;
-			"3" | "fortunave3g")
-				echo -e "Selected variant: SM-G530H XCU / fortunave3g\n";
-				SingleDeviceBuild fortunave3g;;
-			"4" | "fortunafz")
-				echo -e "Selected variant: SM-G530FZ / fortunafz\n";
-				SingleDeviceBuild fortunafz;;
+				echo -e "Selected variant: SM-G530BT\n";
+				BuildKernelAndDtb fortuna3gdtv;;
+			"3" | "fortunafz" | "gprimeltexx")
+				echo -e "Selected variant: SM-G530FZ\n";
+				BuildKernelAndDtb fortunave3g;;
+			"4" | "fortunaltedx")
+				echo -e "Selected variant: SM-G530F\n";
+				BuildKernelAndDtb fortunafz;;
 			"5" | "fortunalteub")
-				echo -e "Selected variant: SM-G530M / fortunalteub\n";
-				SingleDeviceBuild fortunalteub;;	
-			"6" | "fortunaltedx")
-				echo -e "Selected variant: SM-G530F / fortunaltedx";
-				SingleDeviceBuild fortunaltedx;;
+				echo -e "Selected variant: SM-G530M\n";
+				BuildKernelAndDtb fortunalteub;;	
+			"6" | "fortunave3g")
+				echo -e "Selected variant: SM-G530H XCU\n";
+				BuildKernelAndDtb fortunave3g;;
 			"a" | "all" | "ba" | "buildall")
 				BuildForAll="true";
 				echo -e "Building for all devices.\nI recommend you go eat/drink something. This might take a ${bold}LONG ${normal}time.";
@@ -250,9 +266,7 @@ for info on how to use the build script.";
 					export ARCH="arm";
 					export SUBARCH="arm";
 					export CROSS_COMPILE=~/Toolchains/Linaro-7.5-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-;
-					echo -e "Building for: $device";
-					cd $KernelFolder;
-					SingleDeviceBuild $device;
+					BuildKernelAndDtb $device;
 					clear;
 				done;
 				if [[ "$BuildSuccessful" = "true" ]]; then
