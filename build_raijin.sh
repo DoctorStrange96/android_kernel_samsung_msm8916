@@ -14,50 +14,63 @@ ScriptName="build_raijin.sh";
 # Supported devices list
 declare -a SupportedDevicesList=("fortuna3g" "fortuna3gdtv" "fortunafz" "fortunaltedx" "fortunalteub" "fortunave3g");
 
-# Normal & bold text
+# Normal & bold text / Colours
 normal=`tput sgr0`;
 bold=`tput bold`;
+red=`tput setaf 1`;
+nc=`tput setaf 7`;
 
-function RaijinAsciiArt {
-	echo -e "${bold}-------------------------------------------------";
-	sleep 0.1;
-	echo -e " __________________________________________   __ ";
-	sleep 0.1;
-	echo -e " ___  __ \__    |___  _/_____  /___  _/__  | / / ";
-	sleep 0.1;
-	echo -e " __  /_/ /_  /| |__  / ___ _  / __  / __   |/ /  ";
-	sleep 0.1;
-	echo -e " _  _, _/_  ___ |_/ /  / /_/ / __/ /  _  /|  /   ";
-	sleep 0.1;
-	echo -e " /_/ |_| /_/  |_/___/  \____/  /___/  /_/ |_/    ";
-	sleep 0.1;
-	echo -e "${normal}                      雷神                        ${bold}";
-	sleep 0.1;
-	echo -e "-------------------------------------------------";
-	sleep 0.1;
-	echo -e " ${bold}Raijin Kernel - Created by DoctorStrange96 ";
-	sleep 0.1;
-	echo -e " Version: $KernelVersion                         ";
-	sleep 0.1;
-	echo -e " Overclocked Edition                             ";
-	sleep 0.1;	
-	echo -e " Based on ZXKernel by DarkDroidDev & itexpert120 ";
-	sleep 0.1;
-	echo -e " Made for Samsung Galaxy Grand Prime (SM-G530)   ";
-	sleep 0.1;
-	echo -e " Compatible with Android 9 (Pie) and 10 (Q)      ";
-	sleep 0.1;	
-	echo -e "";
-	sleep 0.1;
-	echo -e " Made with Love and Lightning Power in Brazil!   ";
-	sleep 0.1;
-	echo -e "------------------------------------------------- ${normal}";
+# Error string (changes according to locale)
+ErrorString="Error: "
+
+function BoldText() {
+	echo -e "${bold}$1${normal}";
 };
 
-function CleanSources {
+function ErrorMsg() {
+	echo -e "${red}${bold}$ErrorString${nc}${normal}$1";
+};
+
+function RaijinAsciiArt() {
+	BoldText "-----------------------------------------------------";
+	sleep 0.1;
+	BoldText "   __________________________________________   __   ";
+	sleep 0.1;
+	BoldText "   ___  __ \__    |___  _/_____  /___  _/__  | / /   ";
+	sleep 0.1;
+	BoldText "   __  /_/ /_  /| |__  / ___ _  / __  / __   |/ /    ";
+	sleep 0.1;
+	BoldText "   _  _, _/_  ___ |_/ /  / /_/ / __/ /  _  /|  /     ";
+	sleep 0.1;
+	BoldText "   /_/ |_| /_/  |_/___/  \____/  /___/  /_/ |_/      ";
+	sleep 0.1;
+	echo -e "                         雷神                          ";
+	sleep 0.1;
+	BoldText "-----------------------------------------------------";
+	sleep 0.1;
+	BoldText " Raijin Kernel - Created by DoctorStrange96          ";
+	sleep 0.1;
+	BoldText " Version: $KernelVersion                             ";
+	sleep 0.1;
+	BoldText " Overclocked Edition                                 ";
+	sleep 0.1;	
+	BoldText " Baséd on ZXKernel by DarkDroidDev & itexpert120     ";
+	sleep 0.1;
+	BoldText " Made for Samsung Galaxy Grand Prime (SM-G530)       ";
+	sleep 0.1;
+	BoldText " Compatible with Android 9 (Pie) and 10 (Q)          ";
+	sleep 0.1;	
+	BoldText "";
+	sleep 0.1;
+	BoldText " Made in Brazil!                                     ";
+	sleep 0.1;
+	BoldText "-----------------------------------------------------";
+};
+
+function CleanSources() {
 	case $1 in
 		"basic")
-			echo -e "Cleaning most generated files..."
+			echo -e "Removing compiled objects only..."
 			if [[ "$VerboseMode" = "true" ]]; then
 				make clean O="out";
 			else
@@ -65,7 +78,7 @@ function CleanSources {
 			fi;
 			echo -e "Done!";;
 		"full")
-			echo -e "Cleaning all generated files..."
+			echo -e "Cleaning all previously generated files..."
 			if [[ "$VerboseMode" = "true" ]]; then
 				make mrproper O="out";
 			else
@@ -75,7 +88,7 @@ function CleanSources {
 	esac;
 };
 
-function CreateFlashableZip {
+function CreateFlashableZip() {
 	echo -e "Creating flashable zip...";
 	cd $KernelFolder/raijin_oc/ak3_common;
 	if [[ "$VerboseMode" = "true" ]]; then
@@ -96,7 +109,7 @@ function CreateFlashableZip {
 	rm -f $ModulesFolder/*;
 };
 
-function InitialSetup {
+function InitialSetup() {
 	echo -e "Setting up cross-compiler..."
 	export ARCH="arm";
 	export SUBARCH="arm";
@@ -105,17 +118,17 @@ function InitialSetup {
 	if [ ! -d out ]; then
 		mkdir out && echo -e "Make \"out\" directory successfully created.\n";
 	else
-		echo -e "Make \"out\" directory already exists. Skipping.\n";
+		echo -e "Make \"out\" directory already exists. Nothing to do.\n";
 	fi;
 	echo -e "Creating Raijin final builds folder if needed...";
 	if [ ! -d raijin_oc/final_builds ]; then
 		mkdir -p raijin_oc/final_builds && echo -e "Raijin final builds folder successfully created.\n";
 	else
-		echo -e "Raijin final builds folder already exists. Skipping.\n";
+		echo -e "Raijin final builds folder already exists. Nothing to do.\n";
 	fi;
 };
 
-function ShowHelp {
+function ShowHelp() {
 	HelpString=`cat << EOM
 ${bold}Usage: ${normal}./$ScriptName {1-6|VARIANT|a|c|h|m} {v|nc} {nc}
 
@@ -129,19 +142,19 @@ Supported variants:
 
 Other options:
 	a, all, ba, buildall - build for all devices sequentially
-	c, clean - remove most generated files
+	c, clean - remove most generated files (compiled objects only)
 	h, help - show this help message
 	m, mrproper, cleanall - remove all generated files
 
-Build options (regardless of being individual or batch build):
-	nc, noclean - skip pre-build source clean-up
+Build options:
+	nc, noclean - skip pre-build source clean-up ${bold}(not recommended!)${normal}
 	v, verbose - enable verbose mode
 EOM
 `;
 	echo -e "$HelpString";
 };
 
-function BuildKernelAndDtb {
+function BuildKernelAndDtb() {
 	# Always clean everything before building unless the "nc" flag was passed
 	[[ ! "$NoClean" = "true" ]] && CleanSources full;
 
@@ -163,7 +176,7 @@ function BuildKernelAndDtb {
 
 	# This is where the actual build starts
 	echo -e "Building...\n";
-	echo -e "Build started on `date +"%Y-%m-%d"` at `date +"%R GMT%z"`.";
+	echo -e "Build started on `date +"%d %B %Y"` at `date +"%R GMT%z"`.";
 	echo -e "Kernel localversion will be: 3.10.108"$LOCALVERSION;
 	make -C $KernelFolder -j$JobCount raijin_msm8916_defconfig O="out";
 	make -C $KernelFolder -j$JobCount O="out";
@@ -174,7 +187,7 @@ function BuildKernelAndDtb {
 	# Check if the build succeeded by checking if zImage exists; else abort
 	if [ -f out/arch/arm/boot/zImage ]; then
 		# Tell the building part is finished
-		echo -e "Build finished on `date +"%Y-%m-%d"` at `date +"%R GMT%z"`.";
+		echo -e "Build finished on `date +"%d %B %Y"` at `date +"%R GMT%z"`.";
 		# Copy zImage
 		echo -e "Copying kernel image...";
 		cp out/arch/$ARCH/boot/zImage $DeviceFolder;
@@ -199,11 +212,12 @@ function BuildKernelAndDtb {
 		echo -e "Done!";
 		BuildSuccessful="true";
 		if [[ ! "$BuildForAll" = "true" ]]; then
-			echo -e "The whole process was finished on `date +"%Y-%m-%d"` at `date +"%R GMT%z"`.
+			echo -e "The whole process was finished on `date +"%d %B %Y"` at `date +"%R GMT%z"`.
 You'll find your flashable zip at raijin_oc/final_builds/$SelectedDevice.";
 		fi;
 	else
-		echo -e "zImage was not found. That means this build failed. Please check your sources for any errors and try again.";
+		echo -e "zImage was not found. That means the build failed. 
+Please check your source code for errors; if that is the case, fix them and try again.";
 		exit 1;
 	fi;
 };
@@ -215,8 +229,8 @@ case $1 in
 		ShowHelp;
 		exit 0;;
 	"" | " ")
-		echo -e "${bold}Error:${normal} This script requires at least one argument.\nRun \"./$ScriptName help\" or \"./$ScriptName h\" 
-for info on how to use the build script.";
+		ErrorMsg "This script requires at least one argument.\nRun \"./$ScriptName help\" or \"./$ScriptName h\" 
+for help.";
 		exit 0;;
 	*)
 		InitialSetup;
@@ -261,11 +275,13 @@ for info on how to use the build script.";
 				BuildKernelAndDtb fortunave3g;;
 			"a" | "all" | "ba" | "buildall")
 				BuildForAll="true";
-				echo -e "Building for all devices.\nI recommend you go eat/drink something. This might take a ${bold}LONG ${normal}time.";
+				echo -e "Building for all devices sequentially.
+I recommend you go eat/drink something. This might take a ${bold}LONG ${normal}time.";
 				for device in ${SupportedDevicesList[@]}; do
 					export ARCH="arm";
 					export SUBARCH="arm";
 					export CROSS_COMPILE=~/Toolchains/Linaro-7.5-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-;
+					cd $KernelFolder;
 					BuildKernelAndDtb $device;
 					clear;
 				done;
@@ -274,7 +290,7 @@ for info on how to use the build script.";
 You'll find your flashable zips at the respective raijin_oc/final_builds folder for each device.";
 				fi;;
 			*)
-				echo -e "You have entered an invalid option.\nYou can use the following options:";
+				ErrorMsg "You have entered an invalid option.";
 				ShowHelp;
 				exit 1;;
 		esac;

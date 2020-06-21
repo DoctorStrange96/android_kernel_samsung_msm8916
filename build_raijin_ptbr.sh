@@ -17,47 +17,60 @@ declare -a SupportedDevicesList=("fortuna3g" "fortuna3gdtv" "fortunafz" "fortuna
 # Normal & bold text
 normal=`tput sgr0`;
 bold=`tput bold`;
+red=`tput setaf 1`;
+nc=`tput setaf 7`;
 
-function RaijinAsciiArt {
-	echo -e "${bold}-------------------------------------------------";
-	sleep 0.1;
-	echo -e " __________________________________________   __ ";
-	sleep 0.1;
-	echo -e " ___  __ \__    |___  _/_____  /___  _/__  | / / ";
-	sleep 0.1;
-	echo -e " __  /_/ /_  /| |__  / ___ _  / __  / __   |/ /  ";
-	sleep 0.1;
-	echo -e " _  _, _/_  ___ |_/ /  / /_/ / __/ /  _  /|  /   ";
-	sleep 0.1;
-	echo -e " /_/ |_| /_/  |_/___/  \____/  /___/  /_/ |_/    ";
-	sleep 0.1;
-	echo -e "${normal}                      雷神                        ${bold}";
-	sleep 0.1;
-	echo -e "-------------------------------------------------";
-	sleep 0.1;
-	echo -e " ${bold}Raijin Kernel - Criado por DoctorStrange96 ";
-	sleep 0.1;
-	echo -e " Versão: $KernelVersion                        ";
-	sleep 0.1;
-	echo -e " Edição Overclock                             ";
-	sleep 0.1;	
-	echo -e " Baseado no ZXKernel por DarkDroidDev & itexpert120 ";
-	sleep 0.1;
-	echo -e " Criado para o Samsung Galaxy Grand Prime (SM-G530)   ";
-	sleep 0.1;
-	echo -e " Compatível com Android 9 (Pie) e 10 (Q)      ";
-	sleep 0.1;	
-	echo -e "";
-	sleep 0.1;
-	echo -e " Feito no Brasil!   ";
-	sleep 0.1;
-	echo -e "------------------------------------------------- ${normal}";
+# Error string (changes according to locale)
+ErrorString="Erro: "
+
+function BoldText() {
+	echo -e "${bold}$1${normal}";
 };
 
-function CleanSources {
+function ErrorMsg() {
+	echo -e "${red}${bold}$ErrorString${nc}${normal}$1";
+};
+
+function RaijinAsciiArt() {
+	BoldText "-----------------------------------------------------";
+	sleep 0.1;
+	BoldText "   __________________________________________   __   ";
+	sleep 0.1;
+	BoldText "   ___  __ \__    |___  _/_____  /___  _/__  | / /   ";
+	sleep 0.1;
+	BoldText "   __  /_/ /_  /| |__  / ___ _  / __  / __   |/ /    ";
+	sleep 0.1;
+	BoldText "   _  _, _/_  ___ |_/ /  / /_/ / __/ /  _  /|  /     ";
+	sleep 0.1;
+	BoldText "   /_/ |_| /_/  |_/___/  \____/  /___/  /_/ |_/      ";
+	sleep 0.1;
+	echo -e "                         雷神                          ";
+	sleep 0.1;
+	BoldText "-----------------------------------------------------";
+	sleep 0.1;
+	BoldText " Raijin Kernel - Criado por DoctorStrange96          ";
+	sleep 0.1;
+	BoldText " Versão: $KernelVersion                              ";
+	sleep 0.1;
+	BoldText " Edição Overclock                                    ";
+	sleep 0.1;	
+	BoldText " Baseado no ZXKernel por DarkDroidDev e itexpert120  ";
+	sleep 0.1;
+	BoldText " Criado para o Samsung Galaxy Grand Prime (SM-G530)  ";
+	sleep 0.1;
+	BoldText " Compatível com Android 9 (Pie) e 10 (Q)             ";
+	sleep 0.1;	
+	BoldText "";
+	sleep 0.1;
+	BoldText " Feito no Brasil!                                    ";
+	sleep 0.1;
+	BoldText "-----------------------------------------------------";
+};
+
+function CleanSources() {
 	case $1 in
 		"basic")
-			echo -e "Removendo a maior parte dos arquivos gerados..."
+			echo -e "Removendo somente os objetos compilados..."
 			if [[ "$VerboseMode" = "true" ]]; then
 				make clean O="out";
 			else
@@ -65,7 +78,7 @@ function CleanSources {
 			fi;
 			echo -e "Feito!";;
 		"full")
-			echo -e "Removendo todos os arquivos gerados..."
+			echo -e "Removendo todos os arquivos anteriormente gerados..."
 			if [[ "$VerboseMode" = "true" ]]; then
 				make mrproper O="out";
 			else
@@ -75,7 +88,7 @@ function CleanSources {
 	esac;
 };
 
-function CreateFlashableZip {
+function CreateFlashableZip() {
 	echo -e "Criando um \"flashable zip\"...";
 	cd $KernelFolder/raijin_oc/ak3_common;
 	if [[ "$VerboseMode" = "true" ]]; then
@@ -96,7 +109,7 @@ function CreateFlashableZip {
 	rm -f $ModulesFolder/*;
 };
 
-function InitialSetup {
+function InitialSetup() {
 	echo -e "Configurando o compilador..."
 	export ARCH="arm";
 	export SUBARCH="arm";
@@ -105,21 +118,21 @@ function InitialSetup {
 	if [ ! -d out ]; then
 		mkdir out && echo -e "Pasta de saída criada com sucesso.\n";
 	else
-		echo -e "A pasta de saída já existe. Pulando.\n";
+		echo -e "A pasta de saída já existe. Nada a fazer.\n";
 	fi;
 	echo -e "Criando a pasta das builds finais...";
 	if [ ! -d raijin_oc/final_builds ]; then
 		mkdir -p raijin_oc/final_builds && echo -e "Pasta das builds finais criada com sucesso.\n";
 	else
-		echo -e "A pasta das builds finais já existe. Pulando.\n";
+		echo -e "A pasta das builds finais já existe. Nada a fazer.\n";
 	fi;
 };
 
-function ShowHelp {
+function ShowHelp() {
 	HelpString=`cat << EOM
-${bold}Uso: ${normal}./$ScriptName {1-6|VARIANT|a|c|h|m} {v|nc} {nc}
+${bold}Uso: ${normal}./$ScriptName {1-6|MODELO|a|c|h|m} {v|nc} {nc}
 
-Variantes suportadas:
+Modelos suportados:
 	1, fortuna3g - SM-G530H XXU (Global, apenas 3G)
 	2, fortuna3gdtv - SM-G530BT ("Gran" Prime com TV digital, Brasil, apenas 3G)
 	3, fortunafz, gprimeltexx - SM-G530FZ (Europa, 4G com NFC)
@@ -128,20 +141,20 @@ Variantes suportadas:
 	6, fortunave3g - SM-G530H XCU (EMEA, apenas 3G)	
 
 Outras opções:
-	a, all, ba, buildall - compilar para todas as variantes sequencialmente
-	c, clean - fazer uma limpeza básica
+	a, all, ba, buildall - compilar para todos os modelos sequencialmente
+	c, clean - remover somente os objetos compilados
 	h, help - mostrar esta mensagem de ajuda
 	m, mrproper, cleanall - fazer uma limpeza completa
 
 Opções de compilação:
-	nc, noclean - não fazer nenhuma limpeza antes da compilação
+	nc, noclean - não fazer nenhuma limpeza antes da compilação ${bold}(não recomendado!)${normal}
 	v, verbose - ativar o modo verbose
 EOM
 `;
 	echo -e "$HelpString";
 };
 
-function BuildKernelAndDtb {
+function BuildKernelAndDtb() {
 	# Always clean everything before building unless the "nc" flag was passed
 	[[ ! "$NoClean" = "true" ]] && CleanSources full;
 
@@ -163,7 +176,7 @@ function BuildKernelAndDtb {
 
 	# This is where the actual build starts
 	echo -e "Compilando...\n";
-	echo -e "A compilação começou em `date +"%d de %m de %Y"` às `date +"%R GMT%z"`.";
+	echo -e "A compilação começou em `date +"%d de %B de %Y"` às `date +"%R GMT%z"`.";
 	echo -e "A versão do kernel será: 3.10.108"$LOCALVERSION;
 	make -C $KernelFolder -j$JobCount raijin_msm8916_defconfig O="out";
 	make -C $KernelFolder -j$JobCount O="out";
@@ -174,7 +187,7 @@ function BuildKernelAndDtb {
 	# Check if the build succeeded by checking if zImage exists; else abort
 	if [ -f out/arch/arm/boot/zImage ]; then
 		# Tell the building part is finished
-		echo -e "A compilação terminou em `date +"%d de %m de %Y"` às `date +"%R GMT%z"`.";
+		echo -e "A compilação terminou em `date +"%d de %B de %Y"` às `date +"%R GMT%z"`.";
 		# Copy zImage
 		echo -e "Copiando imagem do kernel...";
 		cp out/arch/$ARCH/boot/zImage $DeviceFolder;
@@ -199,12 +212,12 @@ function BuildKernelAndDtb {
 		echo -e "Feito!";
 		BuildSuccessful="true";
 		if [[ ! "$BuildForAll" = "true" ]]; then
-			echo -e "O processo inteiro terminou em `date +"%d de %m de %Y"` às `date +"%R GMT%z"`.
+			echo -e "O processo inteiro terminou em `date +"%d de %B de %Y"` às `date +"%R GMT%z"`.
 Você encontrará seu flashable zip em raijin_oc/final_builds/$SelectedDevice.";
 		fi;
 	else
-		echo -e "O arquivo \"zImage\" não foi encontrado. Isso geralmente significa que a compilação falhou.
-Verifique se o código-fonte contém erros e tente de novo.";
+		echo -e "O arquivo \"zImage\" não foi encontrado. Isso significa que a compilação falhou.
+Verifique se o código-fonte contém erros; se for o caso, corrija-os e tente de novo.";
 		exit 1;
 	fi;
 };
@@ -216,7 +229,7 @@ case $1 in
 		ShowHelp;
 		exit 0;;
 	"" | " ")
-		echo -e "${bold}Erro:${normal} Este script requer pelo menos um argumento.\nExecute \"./$ScriptName help\" ou \"./$ScriptName h\"
+		ErrorMsg "Este script requer pelo menos um argumento.\nExecute \"./$ScriptName help\" ou \"./$ScriptName h\"
 para obter ajuda.";
 		exit 0;;
 	*)
@@ -243,39 +256,41 @@ para obter ajuda.";
 				CleanSources full;
 				exit 0;;
 			"1" | "fortuna3g")
-				echo -e "Variante selecionada: SM-G530H XXU\n";
+				echo -e "Modelo selecionado: SM-G530H XXU\n";
 				BuildKernelAndDtb fortuna3g;;
 			"2" | "fortuna3gdtv")
-				echo -e "Variante selecionada: SM-G530BT\n";
+				echo -e "Modelo selecionado: SM-G530BT\n";
 				BuildKernelAndDtb fortuna3gdtv;;
 			"3" | "fortunafz" | "gprimeltexx")
-				echo -e "Variante selecionada: SM-G530FZ\n";
+				echo -e "Modelo selecionado: SM-G530FZ\n";
 				BuildKernelAndDtb fortunave3g;;
 			"4" | "fortunaltedx")
-				echo -e "Variante selecionada: SM-G530F\n";
+				echo -e "Modelo selecionado: SM-G530F\n";
 				BuildKernelAndDtb fortunafz;;
 			"5" | "fortunalteub")
-				echo -e "Variante selecionada: SM-G530M\n";
+				echo -e "Modelo selecionado: SM-G530M\n";
 				BuildKernelAndDtb fortunalteub;;	
 			"6" | "fortunave3g")
-				echo -e "Variante selecionada: SM-G530H XCU\n";
+				echo -e "Modelo selecionado: SM-G530H XCU\n";
 				BuildKernelAndDtb fortunave3g;;
 			"a" | "all" | "ba" | "buildall")
 				BuildForAll="true";
-				echo -e "Compilando para todas as variantes.\nTe recomendo ir comer ou beber alguma coisa. Isso pode levar ${bold}BASTANTE ${normal}tempo.";
+				echo -e "Compilando para todos os modelos.
+Te recomendo ir comer ou beber alguma coisa. Isso pode levar ${bold}BASTANTE ${normal}tempo.";
 				for device in ${SupportedDevicesList[@]}; do
 					export ARCH="arm";
 					export SUBARCH="arm";
 					export CROSS_COMPILE=~/Toolchains/Linaro-7.5-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-;
+					cd $KernelFolder;
 					BuildKernelAndDtb $device;
 					clear;
 				done;
 				if [[ "$BuildSuccessful" = "true" ]]; then
-					echo -e "O processo inteiro terminou em `date +"%d de %m de %Y"` às `date +"%R GMT%z"`.
-Você encontrará seus flashable zips na respectiva pasta raijin_oc/final_builds para cada variante.";
+					echo -e "O processo inteiro terminou em `date +"%d de %B de %Y"` às `date +"%R GMT%z"`.
+Você encontrará seus flashable zips na respectiva pasta raijin_oc/final_builds para cada modelo.";
 				fi;;
 			*)
-				echo -e "Você forneceu uma opção inválida.\nVocê pode usar as seguintes opções:";
+				ErrorMsg "Você forneceu uma opção inválida.";
 				ShowHelp;
 				exit 1;;
 		esac;
