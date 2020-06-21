@@ -9,7 +9,7 @@
 KernelName="RaijinKernel";
 KernelVersion="Amaterasu";
 KernelFolder=`pwd`;
-ScriptName="build_raijin.sh";
+ScriptName="build_raijin_fr.sh";
 
 # Supported devices list
 declare -a SupportedDevicesList=("fortuna3g" "fortuna3gdtv" "fortunafz" "fortunaltedx" "fortunalteub" "fortunave3g");
@@ -63,7 +63,7 @@ function CleanSources {
 			else
 				make clean O="out" > /dev/null;
 			fi;
-			echo -e "Done!";;
+			echo -e "Fait !";;
 		"full")
 			echo -e "Nettoyage de tous les fichiers générés..."
 			if [[ "$VerboseMode" = "true" ]]; then
@@ -71,7 +71,7 @@ function CleanSources {
 			else
 				make mrproper O="out" > /dev/null;
 			fi;
-			echo -e "Done!";;
+			echo -e "Fait !";;
 	esac;
 };
 
