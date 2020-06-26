@@ -12,7 +12,7 @@ do.cleanup=1
 do.cleanuponabort=0
 device.name1=fortuna3g
 device.name2=fortunaltedx
-supported.versions=9-10
+supported.versions=8.1.0-10
 supported.patchlevels=
 '; } # end properties
 
