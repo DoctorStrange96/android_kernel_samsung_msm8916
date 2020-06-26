@@ -7,7 +7,8 @@
 
 # Initial variables
 KernelName="RaijinKernel";
-KernelVersion="Amaterasu";
+KernelVersionNumber="1.1";
+KernelVersionName="Ame-no-Uzume";
 KernelFolder=`pwd`;
 ScriptName="build_raijin_fr.sh";
 
@@ -50,7 +51,7 @@ function RaijinAsciiArt() {
 	sleep 0.1;
 	BoldText " Raijin Kernel - Créé par DoctorStrange96            ";
 	sleep 0.1;
-	BoldText " Version : $KernelVersion                            ";
+	BoldText " Version : $KernelVersionNumber « $KernelVersionName »";
 	sleep 0.1;
 	BoldText " Édition Overclock                                   ";
 	sleep 0.1;	
@@ -58,7 +59,7 @@ function RaijinAsciiArt() {
 	sleep 0.1;
 	BoldText " Créé pour le Samsung Galaxy Grand Prime (SM-G530)   ";
 	sleep 0.1;
-	BoldText " Compatible avec Android 9 (Pie) et 10 (Q)           ";
+	BoldText " Compatible avec Android 8.1, 9 et 10                ";
 	sleep 0.1;	
 	BoldText "";
 	sleep 0.1;
@@ -92,15 +93,15 @@ function CreateFlashableZip() {
 	echo -e "Création du « flashable zip »...";
 	cd $KernelFolder/raijin_oc/ak3_common;
 	if [[ "$VerboseMode" = "true" ]]; then
-		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-OC-$SelectedDevice-$BuildDateFull.zip . ;
+		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersionNumber-$KernelVersionName-OC-$SelectedDevice-$BuildDateFull.zip . ;
 	else
-		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-$SelectedDevice-$BuildDateFull.zip . > /dev/null;
+		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersionNumber-$KernelVersionName-OC-$SelectedDevice-$BuildDateFull.zip . > /dev/null;
 	fi;
 	cd $DeviceFolder;
 	if [[ "$VerboseMode" = "true" ]]; then
-		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-OC-$SelectedDevice-$BuildDateFull.zip . ;
+		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersionNumber-$KernelVersionName-OC-$SelectedDevice-$BuildDateFull.zip . ;
 	else
-		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersion-OC-$SelectedDevice-$BuildDateFull.zip . > /dev/null;
+		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersionNumber-$KernelVersionName-OC-$SelectedDevice-$BuildDateFull.zip . > /dev/null;
 	fi;
 	echo -e "Nettoyage...\n";
 	rm -f $DeviceFolder/zImage;
@@ -166,7 +167,7 @@ function BuildKernelAndDtb() {
 	export BuildDate=`date +"%Y%m%d"`;
 	export BuildDateFull=`date +"%Y%m%d-%H%M%S"`;
 	export VARIANT_DEFCONFIG="raijin_msm8916_"$SelectedDevice"_defconfig";
-	export LOCALVERSION="-Raijin-"$KernelVersion"-OC-"$BuildDate;
+	export LOCALVERSION="-Raijin-"$KernelVersionNumber"-"$KernelVersionName"-OC-"$BuildDate;
 	export SELINUX_DEFCONFIG="raijin_selinux_defconfig";
 	export DeviceFolder=$KernelFolder/raijin_oc/device_specific/$SelectedDevice;
 	export OutFolder=$KernelFolder/raijin_oc/final_builds;
