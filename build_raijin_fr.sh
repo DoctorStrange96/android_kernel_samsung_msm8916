@@ -7,7 +7,7 @@
 
 # Initial variables
 KernelName="RaijinKernel";
-KernelVersionNumber="1.1.1";
+KernelVersionNumber="1.1.2";
 KernelVersionName="Ame-no-Uzume";
 KernelFolder=`pwd`;
 ScriptName="build_raijin_fr.sh";
@@ -206,7 +206,7 @@ function BuildKernelAndDtb() {
 		# Write some info to be read by raijin.sh before flashing
 		echo -e "$SelectedDevice" > $DeviceFolder/device.txt;
 		echo -e "$BuildFinishTime" > $DeviceFolder/date.txt;
-		echo -e "$KernelVersion" > $DeviceFolder/version.txt;
+		echo -e "$KernelVersionNumber \"$KernelVersionName\"" > $DeviceFolder/version.txt;
 		# Create our zip file
 		CreateFlashableZip;
 		# Finish
