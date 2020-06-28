@@ -7,7 +7,7 @@
 
 # Initial variables
 KernelName="RaijinKernel";
-KernelVersionNumber="1.1";
+KernelVersionNumber="1.1.1";
 KernelVersionName="Ame-no-Uzume";
 KernelFolder=`pwd`;
 ScriptName="build_raijin_ptbr.sh";
@@ -15,7 +15,7 @@ ScriptName="build_raijin_ptbr.sh";
 # Supported devices list
 declare -a SupportedDevicesList=("fortuna3g" "fortuna3gdtv" "fortunafz" "fortunaltedx" "fortunalteub" "fortunave3g");
 
-# Normal & bold text
+# Normal & bold text / Colours
 normal=`tput sgr0`;
 bold=`tput bold`;
 red=`tput setaf 1`;
