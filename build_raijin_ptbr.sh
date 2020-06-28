@@ -264,10 +264,10 @@ para obter ajuda.";
 				BuildKernelAndDtb fortuna3gdtv;;
 			"3" | "fortunafz" | "gprimeltexx")
 				echo -e "Modelo selecionado: SM-G530FZ\n";
-				BuildKernelAndDtb fortunave3g;;
+				BuildKernelAndDtb fortunafz;;
 			"4" | "fortunaltedx")
 				echo -e "Modelo selecionado: SM-G530F\n";
-				BuildKernelAndDtb fortunafz;;
+				BuildKernelAndDtb fortunaltedx;;
 			"5" | "fortunalteub")
 				echo -e "Modelo selecionado: SM-G530M\n";
 				BuildKernelAndDtb fortunalteub;;	
