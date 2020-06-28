@@ -427,6 +427,12 @@ fi;
 
 do_modules;
 
+ui_print "Pushing Raijin init.d script...";
+mount -o rw,remount /system;
+cp -fr $AKHOME/patch/00-raijin.sh /system/etc/init.d/;
+chmod 755 /system/etc/init.d/00-raijin.sh;
+mount -o ro,remount /system;
+
 debugging;
 restore_env;
 
