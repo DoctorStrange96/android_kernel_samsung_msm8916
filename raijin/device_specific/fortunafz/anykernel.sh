@@ -7,13 +7,13 @@ properties() { '
 kernel.string=
 do.devicecheck=1
 do.modules=1
-do.systemless=1
+do.systemless=0
 do.cleanup=1
 do.cleanuponabort=0
 device.name1=fortunafz
 device.name2=gprimelte
 device.name3=gprimeltexx
-supported.versions=9-10
+supported.versions=8.1.0-10
 supported.patchlevels=
 '; } # end properties
 

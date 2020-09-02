@@ -9,9 +9,8 @@
 KernelName="RaijinKernel";
 KernelVersionNumber="1.1.2";
 KernelVersionName="Ame-no-Uzume";
->>>>>>> a440c66b0676bb864234c7dd6f92a8037fc18e66
 KernelFolder=`pwd`;
-ScriptName="build_raijin.sh";
+ScriptName="build_raijin_it.sh";
 
 # Supported devices list
 declare -a SupportedDevicesList=("fortuna3g" "fortuna3gdtv" "fortunafz" "fortunaltedx" "fortunalteub" "fortunave3g");
@@ -23,7 +22,7 @@ red=`tput setaf 1`;
 nc=`tput setaf 7`;
 
 # Error string (changes according to locale)
-ErrorString="Error: "
+ErrorString="Errore: "
 
 function BoldText() {
 	echo -e "${bold}$1${normal}";
@@ -50,21 +49,21 @@ function RaijinAsciiArt() {
 	sleep 0.1;
 	BoldText "-----------------------------------------------------";
 	sleep 0.1;
-	BoldText " Raijin Kernel - Created by DoctorStrange96          ";
+	BoldText " Raijin Kernel - Creato da DoctorStrange96            ";
 	sleep 0.1;
-	BoldText " Version: $KernelVersionNumber \"$KernelVersionName\"";
+	BoldText " Versione: $KernelVersionNumber \"$KernelVersionName\"" ;
 	sleep 0.1;
-	BoldText " Standard Edition                                    ";
+	BoldText " Edizione Standard                                    ";
 	sleep 0.1;	
-	BoldText " Baséd on ZXKernel by DarkDroidDev & itexpert120     ";
+	BoldText " Basato su ZXKernel da DarkDroidDev & itexpert120    ";
 	sleep 0.1;
-	BoldText " Made for Samsung Galaxy Grand Prime (SM-G530)       ";
+	BoldText " Creato per il Samsung Galaxy Grand Prime (SM-G530)   ";
 	sleep 0.1;
-	BoldText " Compatible with Android 8.1, 9 and 10               ";
+	BoldText " Compatibile con Android 8.1, 9 e 10                 ";
 	sleep 0.1;	
 	BoldText "";
 	sleep 0.1;
-	BoldText " Made in Brazil!                                     ";
+	BoldText " Fatto in Brasile!                                    ";
 	sleep 0.1;
 	BoldText "-----------------------------------------------------";
 };
@@ -72,26 +71,26 @@ function RaijinAsciiArt() {
 function CleanSources() {
 	case $1 in
 		"basic")
-			echo -e "Removing compiled objects only..."
+			echo -e "Rimozione solo degli oggetti compilati..."
 			if [[ "$VerboseMode" = "true" ]]; then
 				make clean O="out";
 			else
 				make clean O="out" > /dev/null;
 			fi;
-			echo -e "Done!";;
+			echo -e "Fatto!";;
 		"full")
-			echo -e "Cleaning all previously generated files..."
+			echo -e "Rimozione di tutti i file generati..."
 			if [[ "$VerboseMode" = "true" ]]; then
 				make mrproper O="out";
 			else
 				make mrproper O="out" > /dev/null;
 			fi;
-			echo -e "Done!";;
+			echo -e "Fatto!";;
 	esac;
 };
 
 function CreateFlashableZip() {
-	echo -e "Creating flashable zip...";
+	echo -e "Creazione del \"flashable zip\"...";
 	cd $KernelFolder/raijin/ak3_common;
 	if [[ "$VerboseMode" = "true" ]]; then
 		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersionNumber-$KernelVersionName-$SelectedDevice-$BuildDateFull.zip . ;
@@ -104,7 +103,7 @@ function CreateFlashableZip() {
 	else
 		zip -r9 $OutFolder/$SelectedDevice/$KernelName-$KernelVersionNumber-$KernelVersionName-$SelectedDevice-$BuildDateFull.zip . > /dev/null;
 	fi;
-	echo -e "Cleaning up...\n";
+	echo -e "Pulizia...\n";
 	rm -f $DeviceFolder/zImage;
 	rm -f $DeviceFolder/dt.img;
 	rm -f $DeviceFolder/*.txt;
@@ -112,45 +111,45 @@ function CreateFlashableZip() {
 };
 
 function InitialSetup() {
-	echo -e "Setting up cross-compiler..."
+	echo -e "Configurazione del cross-compiler..."
 	export ARCH="arm";
 	export SUBARCH="arm";
 	export CROSS_COMPILE=~/Toolchains/Linaro-7.5-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-;
-	echo -e "Creating make's \"out\" directory if needed..."
+	echo -e "Creazione della cartella \"out\"..."
 	if [ ! -d out ]; then
-		mkdir out && echo -e "Make \"out\" directory successfully created.\n";
+		mkdir out && echo -e "La cartella \"out\" è stata creata con successo.\n";
 	else
-		echo -e "Make \"out\" directory already exists. Nothing to do.\n";
+		echo -e "La cartella \"out\" esiste già. Non c'è niente da fare.\n";
 	fi;
-	echo -e "Creating Raijin final builds folder if needed...";
+	echo -e "Creazione della cartela dei file finali di Raijin...";
 	if [ ! -d raijin/final_builds ]; then
-		mkdir -p raijin/final_builds && echo -e "Raijin final builds folder successfully created.\n";
+		mkdir -p raijin/final_builds && echo -e "La cartella dei file finali è stata creata con successo.\n";
 	else
-		echo -e "Raijin final builds folder already exists. Nothing to do.\n";
+		echo -e "La cartella dei file finali esiste già. Non c'è niente da fare.\n";
 	fi;
 };
 
 function ShowHelp() {
 	HelpString=`cat << EOM
-${bold}Usage: ${normal}./$ScriptName {1-6|VARIANT|a|c|h|m} {v|nc} {nc}
+${bold}Uso: ${normal}./$ScriptName {1-6|MODELLO|a|c|h|m} {v|nc} {nc}
 
-Supported variants:
-	1, fortuna3g - SM-G530H XXU (Global Grand Prime, 3G only)
-	2, fortuna3gdtv - SM-G530BT (Brazilian "Gran" Prime w/ DTV, 3G only)
-	3, fortunafz, gprimeltexx - SM-G530FZ (European Grand Prime LTE)
-	4, fortunaltedx - SM-G530F (M. East/Africa/APAC Grand Prime LTE)
-	5, fortunalteub - SM-G530M (LATAM Grand Prime LTE)
-	6, fortunave3g - SM-G530H XCU (EMEA Grand Prime VE, 3G only)	
+Modelli supportati:
+	1, fortuna3g - SM-G530H XXU (Globale, solo 3G)
+	2, fortuna3gdtv - SM-G530BT ("Gran" Prime con TV digitale, Brasile, solo 3G)
+	3, fortunafz, gprimeltexx - SM-G530FZ (Europa, LTE)
+	4, fortunaltedx - SM-G530F (Medio Oriente / Africa / Asia, LTE)
+	5, fortunalteub - SM-G530M (America Latina, LTE)
+	6, fortunave3g - SM-G530H XCU (EMEA, solo 3G)	
 
-Other options:
-	a, all, ba, buildall - build for all devices sequentially
-	c, clean - remove most generated files (compiled objects only)
-	h, help - show this help message
-	m, mrproper, cleanall - remove all generated files
+Altre opzioni:
+	a, all, ba, buildall - compila per tutti i modelli sequenzialmente
+	c, clean - rimuovi solo gli oggetti compilati (*.o, *.a, tra gli altri)
+	h, help - mostra questo messaggio di aiuto
+	m, mrproper, cleanall - rimuovi tutti i file generati (includendo gli oggetti)
 
-Build options:
-	nc, noclean - skip pre-build source clean-up ${bold}(not recommended!)${normal}
-	v, verbose - enable verbose mode
+Opzioni di compilazione:
+	nc, noclean - non pulire le fonti prima una nuova compilazione ${bold}(non raccomandato!)${normal}
+	v, verbose - activa il modo verboso
 EOM
 `;
 	echo -e "$HelpString";
@@ -177,9 +176,9 @@ function BuildKernelAndDtb() {
 	[ ! -d $ModulesFolder ] && mkdir -p $ModulesFolder;
 
 	# This is where the actual build starts
-	echo -e "Building...\n";
-	echo -e "Build started on `date +"%d %B %Y"` at `date +"%R GMT%z"`.";
-	echo -e "Kernel localversion will be: 3.10.108"$LOCALVERSION;
+	echo -e "compilazione in corso...\n";
+	echo -e "La compilazione è stata iniziata il `date +"%d %B %Y"` alle `date +"%R GMT%z"`.";
+	echo -e "La versione del kernel sarà: 3.10.108"$LOCALVERSION;
 	make -C $KernelFolder -j$JobCount raijin_msm8916_defconfig O="out";
 	make -C $KernelFolder -j$JobCount O="out";
 
@@ -189,16 +188,16 @@ function BuildKernelAndDtb() {
 	# Check if the build succeeded by checking if zImage exists; else abort
 	if [ -f out/arch/arm/boot/zImage ]; then
 		# Tell the building part is finished
-		echo -e "Build finished on `date +"%d %B %Y"` at `date +"%R GMT%z"`.";
+		echo -e "La compilazione è stata finita il `date +"%d %B %Y"` alle `date +"%R GMT%z"`.";
 		# Copy zImage
-		echo -e "Copying kernel image...";
+		echo -e "Copia dell'immagine kernel...";
 		cp out/arch/$ARCH/boot/zImage $DeviceFolder;
 		# Copy all kernel modules. Use `find` so no file gets skipped. Also remove any previously built modules.
-		echo -e "Copying kernel modules...";
+		echo -e "Copia dei moduli kernel...";
 		rm -f $ModulesFolder/*;
 		find . -type f -iname "*.ko" -exec cp -f {} $ModulesFolder \;;
 		# Create our DTB image
-		echo -e "Creating device tree blob (DTB) image...";
+		echo -e "Creazione dell'immagine \"DTB\"...";
 		if [[ "$VerboseMode" = "true" ]]; then
 			./dtbtool -o $DeviceFolder/dt.img -s 2048 -p out/scripts/dtc/ out/arch/arm/boot/dts/;
 		else
@@ -211,15 +210,15 @@ function BuildKernelAndDtb() {
 		# Create our zip file
 		CreateFlashableZip;
 		# Finish
-		echo -e "Done!";
+		echo -e "Fatto!";
 		BuildSuccessful="true";
 		if [[ ! "$BuildForAll" = "true" ]]; then
-			echo -e "The whole process was finished on `date +"%d %B %Y"` at `date +"%R GMT%z"`.
-You'll find your flashable zip at raijin/final_builds/$SelectedDevice.";
+			echo -e "Il processo intero è stato finito il `date +"%d %B %Y"` alle `date +"%R GMT%z"`.
+Troverai il tuo \"flashable zip\" nella cartella raijin/final_builds/$SelectedDevice.";
 		fi;
 	else
-		echo -e "zImage was not found. That means the build failed. 
-Please check your source code for errors; if that is the case, fix them and try again.";
+		echo -e "Il file \"zImage\" non è stato trovato. Questo significa che la compilazione ha fallito.
+Verifica il tuo codice sorgente. Se contiene errori, correggili, quindi riprova.";
 		exit 1;
 	fi;
 };
@@ -231,24 +230,25 @@ case $1 in
 		ShowHelp;
 		exit 0;;
 	"" | " ")
-		ErrorMsg "This script requires at least one argument.\nRun \"./$ScriptName help\" or \"./$ScriptName h\" 
-for help.";
+		ErrorMsg "Questo script richiede almeno uno argumento.
+Esegui \"./$ScriptName help\" o \"./$ScriptName h\" 
+per un aiuto.";
 		exit 0;;
 	*)
 		InitialSetup;
 		case $2 in
 		"v" | "verbose")
 			VerboseMode="true";
-			echo -e "Verbose mode enabled.";;
+			echo -e "Il modo verboso è stato attivato.";;
 
 		"nc" | "noclean")
 			NoClean="true";
-			echo -e "Pre-build source clean-up will be skipped. I hope you're sure what you're doing!";;
+			echo -e "Le fonti non verranno pulite prima la compilazione. Spero che tu sappia cosa stai facendo!";;
 		esac;
 		case $3 in
 		"nc" | "noclean")
 			NoClean="true";
-			echo -e "Pre-build source clean-up will be skipped. I hope you're sure what you're doing!";;
+			echo -e "Le fonti non verranno pulite prima la compilazione. Spero che tu sappia cosa stai facendo!";;
 		esac;
 		case $1 in
 			"clean" | "c")
@@ -258,27 +258,27 @@ for help.";
 				CleanSources full;
 				exit 0;;
 			"1" | "fortuna3g")
-				echo -e "Selected variant: SM-G530H XXU\n";
+				echo -e "Modello selezionato: SM-G530H XXU\n";
 				BuildKernelAndDtb fortuna3g;;
 			"2" | "fortuna3gdtv")
-				echo -e "Selected variant: SM-G530BT\n";
+				echo -e "Modello selezionato: SM-G530BT\n";
 				BuildKernelAndDtb fortuna3gdtv;;
 			"3" | "fortunafz" | "gprimeltexx")
-				echo -e "Selected variant: SM-G530FZ\n";
+				echo -e "Modello selezionato: SM-G530FZ\n";
 				BuildKernelAndDtb fortunafz;;
 			"4" | "fortunaltedx")
-				echo -e "Selected variant: SM-G530F\n";
+				echo -e "Modello selezionato: SM-G530F\n";
 				BuildKernelAndDtb fortunaltedx;;
 			"5" | "fortunalteub")
-				echo -e "Selected variant: SM-G530M\n";
+				echo -e "Modello selezionato: SM-G530M\n";
 				BuildKernelAndDtb fortunalteub;;	
 			"6" | "fortunave3g")
-				echo -e "Selected variant: SM-G530H XCU\n";
+				echo -e "Modello selezionato: SM-G530H XCU\n";
 				BuildKernelAndDtb fortunave3g;;
 			"a" | "all" | "ba" | "buildall")
 				BuildForAll="true";
-				echo -e "Building for all devices sequentially.
-I recommend you go eat/drink something. This might take a ${bold}LONG ${normal}time.";
+				echo -e "La compilazione sarà fatta per tutti i modelli sequenzialmente.
+Ti consiglio di mangiare o bere qualcosa. Questo può richiedere ${bold}MOLTO ${normal}tempo.";
 				for device in ${SupportedDevicesList[@]}; do
 					export ARCH="arm";
 					export SUBARCH="arm";
@@ -288,11 +288,11 @@ I recommend you go eat/drink something. This might take a ${bold}LONG ${normal}t
 					clear;
 				done;
 				if [[ "$BuildSuccessful" = "true" ]]; then
-					echo -e "The whole process was finished on `date +"%Y-%m-%d"` at `date +"%R GMT%z"`.
-You'll find your flashable zips at the respective raijin/final_builds folder for each device.";
+					echo -e "Il processo intero è stato finito il `date +"%d %B %Y"` alle `date +"%R GMT%z"`.
+Troverai i tuoi \"flashable zip\" nella rispettiva cartella raijin/final_builds per ogni modello.";
 				fi;;
 			*)
-				ErrorMsg "You have entered an invalid option.";
+				ErrorMsg "Hai fornito un'opzione non valida.";
 				ShowHelp;
 				exit 1;;
 		esac;
