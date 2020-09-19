@@ -7,14 +7,13 @@
 
 # Initial variables
 KernelName="RaijinKernel";
-KernelVersionNumber="1.1.2";
+KernelVersionNumber="1.1.3";
 KernelVersionName="Ame-no-Uzume";
->>>>>>> a440c66b0676bb864234c7dd6f92a8037fc18e66
 KernelFolder=`pwd`;
 ScriptName="build_raijin.sh";
 
 # Supported devices list
-declare -a SupportedDevicesList=("fortuna3g" "fortuna3gdtv" "fortunafz" "fortunaltedx" "fortunalteub" "fortunave3g");
+declare -a SupportedDevicesList=("fortuna3g" "fortuna3gdtv" "fortunafz" "fortunaltedx" "fortunalteub" "fortunave3g" "j5lte" "j5nlte" "j53g" "j5ltechn");
 
 # Normal & bold text / Colours
 normal=`tput sgr0`;
@@ -56,9 +55,13 @@ function RaijinAsciiArt() {
 	sleep 0.1;
 	BoldText " Standard Edition                                    ";
 	sleep 0.1;	
-	BoldText " Baséd on ZXKernel by DarkDroidDev & itexpert120     ";
+	BoldText " Based on ZXKernel by DarkDroidDev & itexpert120     ";
 	sleep 0.1;
-	BoldText " Made for Samsung Galaxy Grand Prime (SM-G530)       ";
+	BoldText " Compatible with:                                    ";
+	sleep 0.1;
+	BoldText " 	Samsung Galaxy Grand Prime (SM-G530xx)         	   ";
+	sleep 0.1;
+	BoldText " 	Samsung Galaxy J5 2015 (SM-J500xx)                 ";
 	sleep 0.1;
 	BoldText " Compatible with Android 8.1, 9 and 10               ";
 	sleep 0.1;	
@@ -132,15 +135,21 @@ function InitialSetup() {
 
 function ShowHelp() {
 	HelpString=`cat << EOM
-${bold}Usage: ${normal}./$ScriptName {1-6|VARIANT|a|c|h|m} {v|nc} {nc}
+${bold}Usage: ${normal}./$ScriptName {1-10|VARIANT|a|c|h|m} {v|nc} {nc}
 
-Supported variants:
+Supported variants (Galaxy Grand Prime):
 	1, fortuna3g - SM-G530H XXU (Global Grand Prime, 3G only)
 	2, fortuna3gdtv - SM-G530BT (Brazilian "Gran" Prime w/ DTV, 3G only)
 	3, fortunafz, gprimeltexx - SM-G530FZ (European Grand Prime LTE)
 	4, fortunaltedx - SM-G530F (M. East/Africa/APAC Grand Prime LTE)
 	5, fortunalteub - SM-G530M (LATAM Grand Prime LTE)
 	6, fortunave3g - SM-G530H XCU (EMEA Grand Prime VE, 3G only)	
+
+Supported variants (Galaxy J5):
+	7, j53g - SM-J500H (Global, 3G only)
+	8, j5lte - SM-J500F/G/M/NO/Y (Global, LTE, no NFC)
+	9, j5nlte - SM-J500FN (Europe, LTE, NFC)
+	10, j5ltechn - SM-J5008 (China)
 
 Other options:
 	a, all, ba, buildall - build for all devices sequentially
@@ -275,6 +284,18 @@ for help.";
 			"6" | "fortunave3g")
 				echo -e "Selected variant: SM-G530H XCU\n";
 				BuildKernelAndDtb fortunave3g;;
+			"7" | "j53g")
+				echo -e "Selected variant: SM-J500H\n";
+				BuildKernelAndDtb j53g;;
+			"8" | "j5lte")
+				echo -e "Selected variant: SM-J500F/G/M/NO/Y\n";
+				BuildKernelAndDtb j5lte;;
+			"9" | "j5nlte")
+				echo -e "Selected variant: SM-J500FN\n";
+				BuildKernelAndDtb j5nlte;;
+			"10" | "j5ltechn")
+				echo -e "Selected variant: SM-J5008\n";
+				BuildKernelAndDtb j5ltechn;;
 			"a" | "all" | "ba" | "buildall")
 				BuildForAll="true";
 				echo -e "Building for all devices sequentially.
