@@ -1,0 +1,37 @@
+#!/sbin/sh
+
+ui_print "-------------------------------------------------";
+sleep 0.1;
+ui_print " __________________________________________   __ ";
+sleep 0.1;
+ui_print " ___  __ \__    |___  _/_____  /___  _/__  | / / ";
+sleep 0.1;
+ui_print " __  /_/ /_  /| |__  / ___ _  / __  / __   |/ /  ";
+sleep 0.1;
+ui_print " _  _, _/_  ___ |_/ /  / /_/ / __/ /  _  /|  /   ";
+sleep 0.1;
+ui_print " /_/ |_| /_/  |_/___/  \____/  /___/  /_/ |_/    ";
+sleep 0.1;
+ui_print "-------------------------------------------------";
+sleep 0.1;
+ui_print " Raijin Kernel - Created by DoctorStrange96      ";
+sleep 0.1;
+ui_print " Version: `cat version.txt`                      ";
+sleep 0.1;
+ui_print " Built for: `cat device.txt`                     ";
+sleep 0.1;
+ui_print " Build date and time: `cat date.txt`             ";
+sleep 0.1;
+ui_print " Based on ZXKernel by DarkDroidDev & itexpert120 ";
+sleep 0.1;
+ui_print " Made for Samsung Galaxy Grand Prime (SM-G530X)  ";
+sleep 0.1;
+ui_print " Made also for Samsung Galaxy J5 2015 (SM-J500X) ";
+sleep 0.1;
+ui_print " Compatible with Android 9 (Pie) and 10 (Q)      ";
+sleep 0.1;  
+ui_print "";
+sleep 0.1;
+ui_print " Made with Love and Lightning Power in Brazil!   ";
+sleep 0.1;
+ui_print "-------------------------------------------------";
